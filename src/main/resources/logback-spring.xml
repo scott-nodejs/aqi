@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!--<property name="log.home.local" value="/Users/tangtang520/log/carFool"/>-->
+<!--    <property name="log.home.server" value="/data/logs/manage"/>-->
+    <!-- 彩色日志 -->
+    <!-- 彩色日志依赖的渲染类 -->
+    <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter"/>
+    <conversionRule conversionWord="wex"
+                    converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter"/>
+    <conversionRule conversionWord="wEx"
+                    converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter"/>
+    <!-- 彩色日志格式 -->
+    <!--<property name="CONSOLE_LOG_PATTERN"-->
+    <!--value="${CONSOLE_LOG_PATTERN:-%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) -->
+    <!--%clr(${PID:- }){magenta} %clr(-&#45;&#45;){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} -->
+    <!--%clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}"/>-->
+    <property name="CONSOLE_LOG_PATTERN"
+              value="${CONSOLE_LOG_PATTERN:-%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} | %clr(${LOG_LEVEL_PATTERN:-%5p}) | %clr(${PID:- }){magenta} | %clr(%15.15t){faint} | %clr(%-40.40logger{39}){cyan} | %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}"/>
+
+    <property name="LOG_PATTERN"
+              value="${LOG_PATTERN:-%d{yyyy-MM-dd HH:mm:ss.SSS} | ${LOG_LEVEL_PATTERN:-%5p} | ${PID:- } | %15.15t | %-40.40logger{39} | %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}"/>
+
+    <!-- Console 输出设置 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <!-- 过滤的级别 -->
+            <level>WARN</level>
+            <!-- 匹配时的操作：接收（记录） -->
+            <onMatch>DENY</onMatch>
+            <!-- 不匹配时的操作：拒绝（不记录） -->
+            <!--<onMismatch>DENY</onMismatch>-->
+        </filter>
+    </appender>
+
+    <!-- 文件保存日志的相关配置 ERROR -->
+    <appender name="ERROR-OUT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 保存日志文件的路径 -->
+        <!--<springProfile name="local">-->
+        <!--<file>${log.home.local}/error/error.log</file>-->
+        <!--</springProfile>-->
+        <!--<springProfile name="dev,prod">-->
+        <!--<file>${log.home.server}/error/error.log</file>-->
+        <!--</springProfile>-->
+        <file>${log.home.server}/error/error.log</file>
+        <!-- 日志格式 -->
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+        <!-- 日志级别过滤器 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <!-- 过滤的级别 -->
+            <level>ERROR</level>
+            <!-- 匹配时的操作：接收（记录） -->
+            <onMatch>ACCEPT</onMatch>
+            <!-- 不匹配时的操作：拒绝（不记录） -->
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <!-- 循环政策：基于时间创建日志文件 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 日志文件名格式 -->
+            <!--<springProfile name="local">-->
+            <!--<fileNamePattern>${log.home.local}/error/%d{yyyy-MM-dd}-error.log.gz</fileNamePattern>-->
+            <!--</springProfile>-->
+            <!--<springProfile name="dev,prod">-->
+            <!--<fileNamePattern>${log.home.server}/error/%d{yyyy-MM-dd}-error.log.gz</fileNamePattern>-->
+            <!--</springProfile>-->
+            <fileNamePattern>${log.home.server}/error/%d{yyyy-MM-dd}-error.log.gz</fileNamePattern>
+            <!-- 最大保存时间：30天-->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+
+        <!--<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">-->
+        <!--&lt;!&ndash; 日志文件最大大小 &ndash;&gt;-->
+        <!--<MaxFileSize>100MB</MaxFileSize>-->
+        <!--</triggeringPolicy>-->
+    </appender>
+
+    <!-- 文件保存日志的相关配置 INFO -->
+    <appender name="INFO-OUT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 保存日志文件的路径 -->
+        <!--<springProfile name="local">-->
+        <!--<file>${log.home.local}/info/info.log</file>-->
+        <!--</springProfile>-->
+        <!--<springProfile name="dev,prod">-->
+        <!--<file>${log.home.server}/info/info.log</file>-->
+        <!--</springProfile>-->
+        <file>${log.home.server}/info/info.log</file>
+        <!-- 日志格式 -->
+        <encoder>
+            <!--<pattern>%d{yyyy-MM-dd HH:mm:ss} [%class:%line] - %m%n</pattern>-->
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+        <!-- 日志级别过滤器 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <!-- 过滤的级别 -->
+            <level>INFO</level>
+            <!-- 匹配时的操作：接收（记录） -->
+            <onMatch>ACCEPT</onMatch>
+            <!-- 不匹配时的操作：拒绝（不记录） -->
+            <!--<onMismatch>DENY</onMismatch>-->
+        </filter>
+        <!-- 循环政策：基于时间创建日志文件 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 日志文件名格式 -->
+            <!--<springProfile name="local">-->
+            <!--<fileNamePattern>${log.home.local}/info/%d{yyyy-MM-dd}-info.log</fileNamePattern>-->
+            <!--</springProfile>-->
+            <!--<springProfile name="dev,prod">-->
+            <!--<fileNamePattern>${log.home.server}/info/%d{yyyy-MM-dd}-info.log</fileNamePattern>-->
+            <!--</springProfile>-->
+            <fileNamePattern>${log.home.server}/info/%d{yyyy-MM-dd}-info.log.gz</fileNamePattern>
+            <!-- 最大保存时间：30天-->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+
+        <!--<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">-->
+        <!--&lt;!&ndash; 日志文件最大大小 &ndash;&gt;-->
+        <!--<MaxFileSize>100MB</MaxFileSize>-->
+        <!--</triggeringPolicy>-->
+    </appender>
+
+    <!-- 输出mybatis的sql语句,没有这句就无法输出mybatis的sql语句，name属性指定到要输出日志的dao，即mybatis要代理的dao -->
+    <!--<springProfile name="local">-->
+<!--    <logger name="com.iciba.manage.dao" level="DEBUG"/>-->
+    <!--</springProfile>-->
+<!--    <logger name="com.iciba.manage.dao" level="DEBUG"/>-->
+    <!-- 基于info处理日志：具体控制台或者文件对日志级别的处理还要看所在appender配置的filter，如果没有配置filter，则使用root配置 -->
+    <root level="info">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="INFO-OUT"/>
+        <appender-ref ref="ERROR-OUT"/>
+    </root>
+
+</configuration>
