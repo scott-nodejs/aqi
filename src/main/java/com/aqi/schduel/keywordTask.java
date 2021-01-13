@@ -86,7 +86,7 @@ public class keywordTask {
                             if(cityService.getCityByUid(uid) == null){
                                 cityService.insertCity(city);
                             }
-                        }else if(cityUrl.contains(kw.getName()+"/")){
+                        }else if(cityUrl.contains(kw.getName()) && cityUrl.contains("/")){
                             Area city = new Area();
                             city.setName(name);
                             city.setUid(uid);
