@@ -194,8 +194,8 @@ public class keywordTask {
             Aqi aqi1 = new Aqi();
             if(aqi.getAqi() instanceof String){
                 aqi1.setAqi(0);
-            }else{
-                aqi1.setAqi(aqi1.getAqi());
+            }else if(aqi.getAqi() instanceof Integer){
+                aqi1.setAqi((Integer) aqi.getAqi());
             }
             aqi1.setUid(aqi.getIdx());
             int tmp = (Integer) aqi.getTime().get("v") - 8*60*60;
