@@ -56,7 +56,7 @@ public class keywordTask {
                 url.append(kw.getName());
                 url.append("&token=");
                 url.append(GlobalConstant.token);
-                System.out.println("拉取城市和区域: " + url.toString());
+                log.info("拉取城市和区域: " + url.toString());
                 HttpRequestConfig config = HttpRequestConfig.create().url(url.toString());
                 HttpRequestResult result = HttpUtils.get(config);
                 if(result == null){
@@ -122,7 +122,7 @@ public class keywordTask {
                 url.append(city.getUrl());
                 url.append("/?token=");
                 url.append(GlobalConstant.token);
-                System.out.println("城市拉取AQI： "+url.toString());
+                log.info("城市拉取AQI： "+url.toString());
                 HttpRequestConfig config = HttpRequestConfig.create().url(url.toString());
                 HttpRequestResult result = HttpUtils.get(config);
                 if(result == null){
@@ -145,7 +145,7 @@ public class keywordTask {
         });
     }
 
-    @Scheduled(cron = "0 0/10 * * * ?")
+    @Scheduled(cron = "0 0/14 * * * ?")
     public void scanArea(){
         long current = System.currentTimeMillis() / 1000;
         List<Area> areas = areaService.getArea(current);
@@ -157,7 +157,7 @@ public class keywordTask {
                 url.append(city.getUrl());
                 url.append("/?token=");
                 url.append(GlobalConstant.token);
-                System.out.println("区域拉取AQI： "+url.toString());
+                log.info("区域拉取AQI： "+url.toString());
                 HttpRequestConfig config = HttpRequestConfig.create().url(url.toString());
                 HttpRequestResult result = HttpUtils.get(config);
                 if(result == null){
@@ -181,7 +181,7 @@ public class keywordTask {
         });
     }
 
-    @Scheduled(cron = "0 0 0/1 * * ?")
+    @Scheduled(cron = "0 0 * * *  ?")
     public void updateTime(){
         log.info("重置时间");
         cityService.updateTime(getHour());
