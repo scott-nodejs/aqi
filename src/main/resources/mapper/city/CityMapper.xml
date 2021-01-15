@@ -5,4 +5,8 @@
         update aqi_city set vtime = #{vtime},is_update = 0
     </select>
 
+    <select id="selectByNoResult" resultType="com.aqi.entity.NoResult">
+        select uid,city,0 c_type,1 no_count from aqi_city where is_update = 0;
+    </select>
+
 </mapper>

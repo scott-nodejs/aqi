@@ -4,4 +4,8 @@
     <select id="updateTime" parameterType="java.lang.Long">
         update aqi_name set vtime = #{vtime},is_update = 0
     </select>
+
+    <select id="selectByNoResult" resultType="com.aqi.entity.NoResult">
+        select perant_id uid,ac.city city,1 c_type,count(*) no_count from aqi_name an LEFT JOIN aqi_city ac on an.perant_id = ac.uid where an.is_update = 0 GROUP BY perant_id
+    </select>
 </mapper>

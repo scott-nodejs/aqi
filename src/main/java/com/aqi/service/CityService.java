@@ -1,6 +1,7 @@
 package com.aqi.service;
 
 import com.aqi.entity.City;
+import com.aqi.entity.NoResult;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
@@ -14,4 +15,6 @@ public interface CityService extends IService<City> {
     List<City> getCity(long currentTime);
 
     void updateTime(long vtime);
+
+    List<NoResult> selectByNoResult();
 }

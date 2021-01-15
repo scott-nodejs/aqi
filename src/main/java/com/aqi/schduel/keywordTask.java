@@ -4,10 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.aqi.entity.*;
 import com.aqi.global.GlobalConstant;
-import com.aqi.service.AqiService;
-import com.aqi.service.AreaService;
-import com.aqi.service.CityService;
-import com.aqi.service.KeyWordService;
+import com.aqi.service.*;
 import com.aqi.utils.http.HttpRequestConfig;
 import com.aqi.utils.http.HttpRequestResult;
 import com.aqi.utils.http.HttpUtils;
@@ -42,6 +39,9 @@ public class keywordTask {
 
     @Autowired
     private AqiService aqiService;
+
+    @Autowired
+    private NoResultService noResultService;
 
     private CompletableFuture future = new CompletableFuture();
 
@@ -184,6 +184,22 @@ public class keywordTask {
     @Scheduled(cron = "0 0 * * *  ?")
     public void updateTime(){
         log.info("重置时间");
+        List<NoResult> noResults = areaService.selectByNoResult();
+        long time = System.currentTimeMillis() - 30*60*1000;
+        int vtime = (int) getHour(time);
+        noResults.forEach(noResult -> {
+            String uuid = vtime + "_" + noResult.getUid();
+            noResult.setVtime(vtime);
+            noResult.setUuid(uuid);
+            noResultService.insertNoResult(noResult);
+        });
+        List<NoResult> noResult1s = cityService.selectByNoResult();
+        noResult1s.forEach(noResult -> {
+            String uuid = vtime + "_" + noResult.getUid();
+            noResult.setVtime(vtime);
+            noResult.setUuid(uuid);
+            noResultService.insertNoResult(noResult);
+        });
         cityService.updateTime(getHour());
         areaService.updateTime(getHour());
     }
@@ -225,7 +241,11 @@ public class keywordTask {
     }
 
     public static long getHour(){
-        Instant instant = Instant.ofEpochMilli(System.currentTimeMillis());
+        return getHour(System.currentTimeMillis());
+    }
+
+    public static long getHour(long longtime){
+        Instant instant = Instant.ofEpochMilli(longtime);
         ZoneId zone = ZoneId.systemDefault();
         String time = LocalDateTime.ofInstant(instant, zone).format(DateTimeFormatter.ofPattern("yyyyMMddHH"));
         String hour = time.substring(8);

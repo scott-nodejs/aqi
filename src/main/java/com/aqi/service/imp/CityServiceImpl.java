@@ -1,6 +1,7 @@
 package com.aqi.service.imp;
 
 import com.aqi.entity.City;
+import com.aqi.entity.NoResult;
 import com.aqi.mapper.city.CityMapper;
 import com.aqi.service.CityService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -37,5 +38,8 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
         baseMapper.updateTime(vtime);
     }
 
-
+    @Override
+    public List<NoResult> selectByNoResult() {
+        return baseMapper.selectByNoResult();
+    }
 }

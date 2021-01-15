@@ -1,6 +1,7 @@
 package com.aqi.service.imp;
 
 import com.aqi.entity.Area;
+import com.aqi.entity.NoResult;
 import com.aqi.mapper.city.AreaMapper;
 import com.aqi.service.AreaService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -35,5 +36,10 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
     @Override
     public void updateTime(long vtime) {
         baseMapper.updateTime(vtime);
+    }
+
+    @Override
+    public List<NoResult> selectByNoResult() {
+        return baseMapper.selectByNoResult();
     }
 }
