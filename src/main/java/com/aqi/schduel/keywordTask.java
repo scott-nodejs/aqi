@@ -189,7 +189,6 @@ public class keywordTask {
     }
 
     public static long getHour(long longtime){
-        
         Instant instant = Instant.ofEpochMilli(longtime);
         ZoneId zone = ZoneId.systemDefault();
         String time = LocalDateTime.ofInstant(instant, zone).format(DateTimeFormatter.ofPattern("yyyyMMddHH"));
