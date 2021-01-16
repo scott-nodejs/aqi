@@ -27,17 +27,17 @@ public class SendServiceImpl implements SendService {
     @Override
     public boolean send(UrlEntity urlEntity){
         template.convertAndSend(RabbitMqConfig.EXCHANGE, RabbitMqConfig.ROUTINGKEY, urlEntity);
-        template.setConfirmCallback(new RabbitTemplate.ConfirmCallback() {
-            @Override
-            public void confirm(CorrelationData correlationData, boolean ack, String cause) {
-                if (!ack) {
-                    logger.info("send message failed: " + cause); //+ correlationData.toString());
-                    throw new RuntimeException("send error " + cause);
-                } else {
-                    logger.info("send to broke ok" + correlationData.getId());
-                }
-            }
-        });
+//        template.setConfirmCallback(new RabbitTemplate.ConfirmCallback() {
+//            @Override
+//            public void confirm(CorrelationData correlationData, boolean ack, String cause) {
+//                if (!ack) {
+//                    logger.info("send message failed: " + cause); //+ correlationData.toString());
+//                    throw new RuntimeException("send error " + cause);
+//                } else {
+//                    logger.info("send to broke ok" + correlationData.getId());
+//                }
+//            }
+//        });
 
         return true;
     }
