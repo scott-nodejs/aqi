@@ -19,4 +19,12 @@ public class KeyWordServiceImpl extends ServiceImpl<KeyWordMapper, KeyWord> impl
         List<KeyWord> list = baseMapper.selectList(queryWrapper);
         return list;
     }
+
+    @Override
+    public void insertKw(String city) {
+        KeyWord keyWord = new KeyWord();
+        keyWord.setName(city);
+        keyWord.setState(0);
+        baseMapper.insert(keyWord);
+    }
 }

@@ -41,6 +41,9 @@ public class keywordTask {
     private AqiService aqiService;
 
     @Autowired
+    private SendService sendService;
+
+    @Autowired
     private NoResultService noResultService;
 
     private CompletableFuture future = new CompletableFuture();
@@ -116,64 +119,40 @@ public class keywordTask {
         List<City> citys = cityService.getCity(current);
         citys.forEach(city -> {
             try{
-                Thread.sleep(10000);
                 StringBuilder url = new StringBuilder();
                 url.append(GlobalConstant.aqiUrl);
                 url.append(city.getUrl());
                 url.append("/?token=");
                 url.append(GlobalConstant.token);
                 log.info("城市拉取AQI： "+url.toString());
-                HttpRequestConfig config = HttpRequestConfig.create().url(url.toString());
-                HttpRequestResult result = HttpUtils.get(config);
-                if(result == null){
-                    log.info("拉取失败: " + city.getUrl());
-                }
-                AqiResult res = JSON.parseObject(result.getResponseText(), AqiResult.class);
-                if(res.getStatus().equals("ok")){
-                    AqiResult.Aqi data = res.getData();
-                    int tmp = (Integer) data.getTime().get("v")-8*60*60;
-                    if(tmp >= getHour()){
-                        updateAqi(data);
-                        city.setVtime((int)(getHour()+60*60));
-                        city.setIsUpdate(1);
-                        cityService.updateById(city);
-                    }
-                }
+                UrlEntity urlEntity = new UrlEntity();
+                urlEntity.setCity(city);
+                urlEntity.setUrl(url.toString());
+                urlEntity.setType(0);
+                sendService.send(urlEntity);
             }catch (Exception e){
                 log.error("拉取失败 城市更新aqi失败：", e);
             }
         });
     }
 
-    @Scheduled(cron = "0 0/14 * * * ?")
+    @Scheduled(cron = "0 30,35,40,45,50,55 * * * ?")
     public void scanArea(){
         long current = System.currentTimeMillis() / 1000;
         List<Area> areas = areaService.getArea(current);
         areas.forEach(city -> {
             try{
-                Thread.sleep(10000);
                 StringBuilder url = new StringBuilder();
                 url.append(GlobalConstant.aqiUrl);
                 url.append(city.getUrl());
                 url.append("/?token=");
                 url.append(GlobalConstant.token);
                 log.info("区域拉取AQI： "+url.toString());
-                HttpRequestConfig config = HttpRequestConfig.create().url(url.toString());
-                HttpRequestResult result = HttpUtils.get(config);
-                if(result == null){
-                    log.info("拉取失败: " + city.getUrl());
-                }
-                AqiResult res = JSON.parseObject(result.getResponseText(), AqiResult.class);
-                if("ok".equals(res.getStatus())){
-                    AqiResult.Aqi data = res.getData();
-                    int tmp = (Integer) data.getTime().get("v")-8*60*60;
-                    if(tmp >= getHour()){
-                        updateAqi(data);
-                        city.setVtime((int)(getHour()+60*60));
-                        city.setIsUpdate(1);
-                        areaService.updateById(city);
-                    }
-                }
+                UrlEntity urlEntity = new UrlEntity();
+                urlEntity.setArea(city);
+                urlEntity.setUrl(url.toString());
+                urlEntity.setType(1);
+                sendService.send(urlEntity);
             }catch (Exception e){
                 log.error("拉取失败 区域更新aqi失败：", e);
             }
@@ -204,41 +183,6 @@ public class keywordTask {
         areaService.updateTime(getHour());
     }
 
-
-    public void updateAqi(AqiResult.Aqi aqi){
-        try{
-            Aqi aqi1 = new Aqi();
-            if(aqi.getAqi() instanceof String){
-                aqi1.setAqi(0);
-            }else if(aqi.getAqi() instanceof Integer){
-                aqi1.setAqi((Integer) aqi.getAqi());
-            }
-            aqi1.setUid(aqi.getIdx());
-            int tmp = (Integer) aqi.getTime().get("v") - 8*60*60;
-            String uuid = tmp+"_"+aqi.getIdx();
-            aqi1.setUuid(uuid);
-            aqi1.setUrl(aqi.getCity().getUrl());
-
-            aqi1.setCo(String.valueOf(aqi.getIaqi().getCo() == null ?"0":aqi.getIaqi().getCo().get("v")));
-            aqi1.setDew(String.valueOf(aqi.getIaqi().getDew() == null ?"0":aqi.getIaqi().getDew().get("v")));
-            aqi1.setH(String.valueOf(aqi.getIaqi().getH() == null ?"0":aqi.getIaqi().getH().get("v")));
-            aqi1.setNo2(String.valueOf(aqi.getIaqi().getNo2() == null ?"0":aqi.getIaqi().getNo2().get("v")));
-            aqi1.setO3(String.valueOf(aqi.getIaqi().getO3() == null ?"0":aqi.getIaqi().getO3().get("v")));
-            aqi1.setP(String.valueOf(aqi.getIaqi().getP() == null ?"0":aqi.getIaqi().getP().get("v")));
-            aqi1.setPm10(String.valueOf(aqi.getIaqi().getPm10() == null ?"0":aqi.getIaqi().getPm10().get("v")));
-            aqi1.setPm25(String.valueOf(aqi.getIaqi().getPm25() == null ?"0":aqi.getIaqi().getPm25().get("v")));
-            aqi1.setSo2(String.valueOf(aqi.getIaqi().getSo2() == null ?"0":aqi.getIaqi().getSo2().get("v")));
-            aqi1.setT(String.valueOf(aqi.getIaqi().getT() == null ?"0":aqi.getIaqi().getT().get("v")));
-            aqi1.setW(String.valueOf(aqi.getIaqi().getW() == null ?"0":aqi.getIaqi().getW().get("v")));
-            aqi1.setWg(String.valueOf(aqi.getIaqi().getWg() == null ?"0":aqi.getIaqi().getWg().get("v")));
-
-            aqi1.setVtime(tmp);
-            aqi1.setFtime((String) aqi.getTime().get("s"));
-            aqiService.insertAqi(aqi1);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
 
     public static long getHour(){
         return getHour(System.currentTimeMillis());

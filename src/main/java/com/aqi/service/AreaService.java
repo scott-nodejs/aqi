@@ -1,8 +1,6 @@
 package com.aqi.service;
 
-import com.aqi.entity.Area;
-import com.aqi.entity.City;
-import com.aqi.entity.NoResult;
+import com.aqi.entity.*;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
@@ -18,4 +16,6 @@ public interface AreaService extends IService<Area> {
     void updateTime(long vtime);
 
     List<NoResult> selectByNoResult();
+
+    void insertAqi(UrlEntity urlEntity);
 }

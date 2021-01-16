@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface KeyWordService extends IService<KeyWord> {
     List<KeyWord> selectList();
+
+    void insertKw(String city);
 }
