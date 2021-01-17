@@ -61,6 +61,7 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
     @Override
     public void insertAqi(UrlEntity urlEntity) {
         try {
+            long start = System.currentTimeMillis() / 1000;
             Area city = urlEntity.getArea();
             if(city != null){
                 HttpRequestConfig config = HttpRequestConfig.create().url(urlEntity.getUrl());
@@ -80,8 +81,10 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
                     }
                 }
             }
+            long end = System.currentTimeMillis() / 1000;
+            log.info("区域消费时间: " + (end - start));
         }catch (Exception e){
-            e.getStackTrace();
+            log.error("区域消费失败", e);
         }
     }
 }

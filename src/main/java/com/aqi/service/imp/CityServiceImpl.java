@@ -60,6 +60,7 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
         try{
             City city = urlEntity.getCity();
             if(city != null) {
+                long start = System.currentTimeMillis() / 1000;
                 HttpRequestConfig config = HttpRequestConfig.create().url(urlEntity.getUrl());
                 HttpRequestResult result = HttpUtils.get(config);
                 if (result == null) {
@@ -76,6 +77,8 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
                         baseMapper.updateById(city);
                     }
                 }
+                long end = System.currentTimeMillis() / 1000;
+                log.info("城市消费时间: " + (end - start));
             }
         }catch (Exception e){
             log.error("消费失败: ", e);

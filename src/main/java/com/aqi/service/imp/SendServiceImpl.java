@@ -5,8 +5,10 @@ import com.aqi.entity.UrlEntity;
 import com.aqi.service.SendService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageBuilder;
+import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.support.CorrelationData;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +28,14 @@ public class SendServiceImpl implements SendService {
      */
     @Override
     public boolean send(UrlEntity urlEntity){
-        template.convertAndSend(RabbitMqConfig.EXCHANGE, RabbitMqConfig.ROUTINGKEY, urlEntity);
+        long times = 10 * 60 * 1000;
+        template.convertAndSend(RabbitMqConfig.EXCHANGE, RabbitMqConfig.ROUTINGKEY, urlEntity,new MessagePostProcessor() {
+            @Override
+            public Message postProcessMessage(Message message) throws AmqpException {
+                message.getMessageProperties().setExpiration(String.valueOf(times));
+                return message;
+            }
+        });
 //        template.setConfirmCallback(new RabbitTemplate.ConfirmCallback() {
 //            @Override
 //            public void confirm(CorrelationData correlationData, boolean ack, String cause) {
