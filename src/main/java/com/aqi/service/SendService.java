@@ -4,7 +4,7 @@ import com.aqi.entity.UrlEntity;
 
 public interface SendService {
 
-    boolean send(UrlEntity urlEntity);
+    boolean send(UrlEntity urlEntity, long times);
 
-    boolean sendCity(UrlEntity urlEntity);
+    boolean sendCity(UrlEntity urlEntity, long times);
 }

@@ -73,7 +73,7 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
                 if ("ok".equals(res.getStatus())) {
                     AqiResult.Aqi data = res.getData();
                     int tmp = (Integer) data.getTime().get("v") - 8 * 60 * 60;
-                    if (tmp >= getHour()) {
+                    if (tmp >= urlEntity.getVtime()) {
                         aqiService.updateAqi(data);
                         city.setVtime((int) (getHour() + 60 * 60));
                         city.setIsUpdate(1);

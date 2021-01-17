@@ -11,5 +11,7 @@ public class UrlEntity {
 
     private Area area;
 
+    private long vtime;
+
     private int type;
 }

@@ -129,7 +129,9 @@ public class keywordTask {
                 urlEntity.setCity(city);
                 urlEntity.setUrl(url.toString());
                 urlEntity.setType(0);
-                sendService.sendCity(urlEntity);
+                urlEntity.setVtime(getHour());
+                long timeout = (getHour() + 60 * 90) - (System.currentTimeMillis() / 1000);
+                sendService.sendCity(urlEntity, timeout);
             }catch (Exception e){
                 log.error("拉取失败 城市更新aqi失败：", e);
             }
@@ -152,7 +154,9 @@ public class keywordTask {
                 urlEntity.setArea(city);
                 urlEntity.setUrl(url.toString());
                 urlEntity.setType(1);
-                sendService.send(urlEntity);
+                urlEntity.setVtime(getHour());
+                long timeout = (getHour() + 60 * 90) - (System.currentTimeMillis() / 1000);
+                sendService.send(urlEntity, timeout);
             }catch (Exception e){
                 log.error("拉取失败 区域更新aqi失败：", e);
             }

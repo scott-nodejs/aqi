@@ -70,7 +70,7 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
                 if (res.getStatus().equals("ok")) {
                     AqiResult.Aqi data = res.getData();
                     int tmp = (Integer) data.getTime().get("v") - 8 * 60 * 60;
-                    if (tmp >= getHour()) {
+                    if (tmp >= urlEntity.getVtime()) {
                         aqiService.updateAqi(data);
                         city.setVtime((int) (getHour() + 60 * 60));
                         city.setIsUpdate(1);

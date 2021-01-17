@@ -364,7 +364,6 @@ public class HttpUtils {
                 request = new HttpPost(url);
                 break;
         }
-        System.out.println(request.hashCode());
         return request;
     }
 }
