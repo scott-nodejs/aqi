@@ -51,6 +51,12 @@ public class SendServiceImpl implements SendService {
         return true;
     }
 
+    @Override
+    public boolean sendCity(UrlEntity urlEntity){
+        template.convertAndSend(RabbitMqConfig.EXCHANGE, RabbitMqConfig.ROUTINGKEY_FAIL, urlEntity);
+        return true;
+    }
+
     private Message buildMessage(UrlEntity urlEntity) throws Exception {
         Message message = MessageBuilder.withBody(urlEntity.toString().getBytes())
                 .setMessageId(UUID.randomUUID().toString()).setContentType("application/json").build();

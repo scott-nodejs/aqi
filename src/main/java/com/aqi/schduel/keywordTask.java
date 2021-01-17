@@ -129,7 +129,7 @@ public class keywordTask {
                 urlEntity.setCity(city);
                 urlEntity.setUrl(url.toString());
                 urlEntity.setType(0);
-                sendService.send(urlEntity);
+                sendService.sendCity(urlEntity);
             }catch (Exception e){
                 log.error("拉取失败 城市更新aqi失败：", e);
             }

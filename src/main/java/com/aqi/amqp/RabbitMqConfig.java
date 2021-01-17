@@ -101,6 +101,7 @@ public class RabbitMqConfig {
     public Binding binding(Queue queue, DirectExchange exchange) {
         return BindingBuilder.bind(queue()).to(exchange()).with(RabbitMqConfig.ROUTINGKEY);
     }
+
     @Bean
     public Binding bindingFail(Queue queue, DirectExchange exchange) {
         return BindingBuilder.bind(queueFail()).to(exchange()).with(RabbitMqConfig.ROUTINGKEY_FAIL);

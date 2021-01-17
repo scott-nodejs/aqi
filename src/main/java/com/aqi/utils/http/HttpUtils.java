@@ -82,11 +82,11 @@ public class HttpUtils {
     private final static Object SYNC_LOCK = new Object();
 
 
-    private static final int CONNECT_TIMEOUT = 3000;
+    private static final int CONNECT_TIMEOUT = 30000;
 
-    private static final int SOCKET_TIMEOUT = 3000;
+    private static final int SOCKET_TIMEOUT = 30000;
 
-    private static final int CONNECT_REQUEST_TIMEOUT = 3000;
+    private static final int CONNECT_REQUEST_TIMEOUT = 30000;
 
     private static final int MAX_TOTAL = 100;
 
@@ -364,6 +364,7 @@ public class HttpUtils {
                 request = new HttpPost(url);
                 break;
         }
+        System.out.println(request.hashCode());
         return request;
     }
 }
