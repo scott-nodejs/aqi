@@ -54,7 +54,7 @@ public class AqiListener {
                 while (true) {
                     try {
                         Thread.sleep(1000);
-                        processQueue(RabbitMqConfig.QUEUE_NAME, 100,
+                        processQueue(RabbitMqConfig.QUEUE_NAME, 1000,
                                 null, new Consumer<UrlEntity>() {
                                     @Override
                                     public void accept(UrlEntity urlEntity) {
