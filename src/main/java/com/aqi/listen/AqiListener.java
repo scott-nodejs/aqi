@@ -104,7 +104,7 @@ public class AqiListener {
                         channel.basicAck(response.getEnvelope().getDeliveryTag(), false);
                     }
                     catch(Exception e) {
-                        channel.basicNack(response.getEnvelope().getDeliveryTag(), false, true);
+                        channel.basicNack(response.getEnvelope().getDeliveryTag(), false, false);
                     }
                     return result;
                 }
