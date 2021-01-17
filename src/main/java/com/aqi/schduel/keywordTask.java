@@ -160,7 +160,6 @@ public class keywordTask {
             }catch (Exception e){
                 log.error("拉取失败 区域更新aqi失败：", e);
             }
-
         });
     }
 

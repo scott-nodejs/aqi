@@ -31,7 +31,7 @@ public class SendServiceImpl implements SendService {
         template.convertAndSend(RabbitMqConfig.EXCHANGE, RabbitMqConfig.ROUTINGKEY, urlEntity,new MessagePostProcessor() {
             @Override
             public Message postProcessMessage(Message message) throws AmqpException {
-                message.getMessageProperties().setExpiration(String.valueOf(times));
+                message.getMessageProperties().setExpiration(String.valueOf(times*1000));
                 return message;
             }
         });
@@ -55,7 +55,7 @@ public class SendServiceImpl implements SendService {
         template.convertAndSend(RabbitMqConfig.EXCHANGE, RabbitMqConfig.ROUTINGKEY_FAIL, urlEntity, new MessagePostProcessor() {
             @Override
             public Message postProcessMessage(Message message) throws AmqpException {
-                message.getMessageProperties().setExpiration(String.valueOf(times));
+                message.getMessageProperties().setExpiration(String.valueOf(times*1000));
                 return message;
             }
         });
