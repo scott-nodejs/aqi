@@ -120,14 +120,15 @@ public class keywordTask {
         List<City> citys = cityService.getCity(current);
         citys.forEach(city -> {
             try{
-                sendCity(city, 5*60, getHour());
+                UrlEntity urlEntity = sendCity(city, getHour());
+                sendService.sendCity(RabbitMqConfig.ROUTINGKEY_FAIL,urlEntity, 5 * 60);
             }catch (Exception e){
                 log.error("拉取失败 城市更新aqi失败：", e);
             }
         });
     }
 
-    public void sendCity(City city, long timeout, long time){
+    public UrlEntity sendCity(City city, long time){
         StringBuilder url = new StringBuilder();
         url.append(GlobalConstant.aqiUrl);
         url.append(city.getUrl());
@@ -139,7 +140,7 @@ public class keywordTask {
         urlEntity.setUrl(url.toString());
         urlEntity.setType(0);
         urlEntity.setVtime(time);
-        sendService.sendCity(RabbitMqConfig.ROUTINGKEY_FAIL,urlEntity, timeout);
+        return urlEntity;
     }
 
     @Scheduled(cron = "0 30,35,40,45,50,55 * * * ?")
@@ -148,14 +149,15 @@ public class keywordTask {
         List<Area> areas = areaService.getArea(current);
         areas.forEach(city -> {
             try{
-                sendArea(city,5*60, getHour());
+                UrlEntity urlEntity = sendArea(city, getHour());
+                sendService.send(urlEntity, 5*60);
             }catch (Exception e){
                 log.error("拉取失败 区域更新aqi失败：", e);
             }
         });
     }
 
-    public void sendArea(Area city, long timeout, long time){
+    public UrlEntity sendArea(Area city, long time){
         StringBuilder url = new StringBuilder();
         url.append(GlobalConstant.aqiUrl);
         url.append(city.getUrl());
@@ -168,7 +170,7 @@ public class keywordTask {
         urlEntity.setType(1);
         urlEntity.setVtime(time);
         //long timeout = (getHour() + 60 * 90) - (System.currentTimeMillis() / 1000);
-        sendService.send(urlEntity, timeout);
+        return urlEntity;
     }
 
     @Scheduled(cron = "0 0 * * *  ?")
@@ -192,11 +194,13 @@ public class keywordTask {
         });
         List<City> cities = cityService.selectCityByIsUpdate();
         cities.forEach(city -> {
-            sendCity(city, 30*60, vtime);
+            UrlEntity urlEntity = sendCity(city, vtime);
+            sendService.sendCity(RabbitMqConfig.QUEUE_HALF_HOUR, urlEntity, 5 * 60);
         });
         List<Area> areas = areaService.selectAreaByIsUpdate();
         areas.forEach(area -> {
-            sendArea(area, 30*60, vtime);
+            UrlEntity urlEntity = sendArea(area, vtime);
+            sendService.sendCity(RabbitMqConfig.QUEUE_HALF_HOUR, urlEntity, 5 * 60);
         });
 
         cityService.updateTime(getHour());
