@@ -18,4 +18,6 @@ public interface AreaService extends IService<Area> {
     List<NoResult> selectByNoResult();
 
     void insertAqi(UrlEntity urlEntity);
+
+    List<Area> selectAreaByIsUpdate();
 }

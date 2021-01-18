@@ -85,4 +85,9 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
         }
 
     }
+
+    @Override
+    public List<City> selectCityByIsUpdate() {
+        return baseMapper.selectCityByIsUpdate();
+    }
 }

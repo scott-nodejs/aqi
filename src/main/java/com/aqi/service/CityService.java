@@ -21,4 +21,6 @@ public interface CityService extends IService<City> {
     List<NoResult> selectByNoResult();
 
     void insertAqi(UrlEntity urlEntity);
+
+    List<City> selectCityByIsUpdate();
 }

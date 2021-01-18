@@ -21,8 +21,10 @@ public class RabbitMqConfig {
     public static final String EXCHANGE = "spring.boot.direct";
     public static final String ROUTINGKEY_FAIL = "spring.boot.routingKey.failure";
     public static final String ROUTINGKEY = "spring.boot.routingKey";
+    public static final String ROUTINGKEY_HALF_HOUR = "half.hour.routingKey";
     public static final String QUEUE_NAME = "spring.demo";
     public static final String QUEUE_NAME_FAIL = "spring.demo.failure";
+    public static final String QUEUE_HALF_HOUR = "aqi.city.or.area.half.hour";
 
     //RabbitMQ的配置信息
     @Value("${spring.rabbitmq.host}")
@@ -91,6 +93,12 @@ public class RabbitMqConfig {
 
     }
 
+    @Bean
+    public Queue queueHalfHour() {
+        return new Queue(QUEUE_HALF_HOUR, true); //队列持久
+
+    }
+
 
     /**
      * 绑定
@@ -105,6 +113,11 @@ public class RabbitMqConfig {
     @Bean
     public Binding bindingFail(Queue queue, DirectExchange exchange) {
         return BindingBuilder.bind(queueFail()).to(exchange()).with(RabbitMqConfig.ROUTINGKEY_FAIL);
+    }
+
+    @Bean
+    public Binding bindingHalfHour(Queue queue, DirectExchange exchange) {
+        return BindingBuilder.bind(queueHalfHour()).to(exchange()).with(RabbitMqConfig.ROUTINGKEY_HALF_HOUR);
     }
 
 

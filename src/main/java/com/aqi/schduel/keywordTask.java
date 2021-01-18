@@ -2,6 +2,7 @@ package com.aqi.schduel;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.aqi.amqp.RabbitMqConfig;
 import com.aqi.entity.*;
 import com.aqi.global.GlobalConstant;
 import com.aqi.service.*;
@@ -119,23 +120,26 @@ public class keywordTask {
         List<City> citys = cityService.getCity(current);
         citys.forEach(city -> {
             try{
-                StringBuilder url = new StringBuilder();
-                url.append(GlobalConstant.aqiUrl);
-                url.append(city.getUrl());
-                url.append("/?token=");
-                url.append(GlobalConstant.token);
-                log.info("城市拉取AQI： "+url.toString());
-                UrlEntity urlEntity = new UrlEntity();
-                urlEntity.setCity(city);
-                urlEntity.setUrl(url.toString());
-                urlEntity.setType(0);
-                urlEntity.setVtime(getHour());
-                long timeout = (getHour() + 60 * 90) - (System.currentTimeMillis() / 1000);
-                sendService.sendCity(urlEntity, timeout);
+                sendCity(city, 5*60, getHour());
             }catch (Exception e){
                 log.error("拉取失败 城市更新aqi失败：", e);
             }
         });
+    }
+
+    public void sendCity(City city, long timeout, long time){
+        StringBuilder url = new StringBuilder();
+        url.append(GlobalConstant.aqiUrl);
+        url.append(city.getUrl());
+        url.append("/?token=");
+        url.append(GlobalConstant.token);
+        log.info("城市拉取AQI： "+url.toString());
+        UrlEntity urlEntity = new UrlEntity();
+        urlEntity.setCity(city);
+        urlEntity.setUrl(url.toString());
+        urlEntity.setType(0);
+        urlEntity.setVtime(time);
+        sendService.sendCity(RabbitMqConfig.ROUTINGKEY_FAIL,urlEntity, timeout);
     }
 
     @Scheduled(cron = "0 30,35,40,45,50,55 * * * ?")
@@ -144,23 +148,27 @@ public class keywordTask {
         List<Area> areas = areaService.getArea(current);
         areas.forEach(city -> {
             try{
-                StringBuilder url = new StringBuilder();
-                url.append(GlobalConstant.aqiUrl);
-                url.append(city.getUrl());
-                url.append("/?token=");
-                url.append(GlobalConstant.token);
-                log.info("区域拉取AQI： "+url.toString());
-                UrlEntity urlEntity = new UrlEntity();
-                urlEntity.setArea(city);
-                urlEntity.setUrl(url.toString());
-                urlEntity.setType(1);
-                urlEntity.setVtime(getHour());
-                long timeout = (getHour() + 60 * 90) - (System.currentTimeMillis() / 1000);
-                sendService.send(urlEntity, timeout);
+                sendArea(city,5*60, getHour());
             }catch (Exception e){
                 log.error("拉取失败 区域更新aqi失败：", e);
             }
         });
+    }
+
+    public void sendArea(Area city, long timeout, long time){
+        StringBuilder url = new StringBuilder();
+        url.append(GlobalConstant.aqiUrl);
+        url.append(city.getUrl());
+        url.append("/?token=");
+        url.append(GlobalConstant.token);
+        log.info("区域拉取AQI： "+url.toString());
+        UrlEntity urlEntity = new UrlEntity();
+        urlEntity.setArea(city);
+        urlEntity.setUrl(url.toString());
+        urlEntity.setType(1);
+        urlEntity.setVtime(time);
+        //long timeout = (getHour() + 60 * 90) - (System.currentTimeMillis() / 1000);
+        sendService.send(urlEntity, timeout);
     }
 
     @Scheduled(cron = "0 0 * * *  ?")
@@ -182,6 +190,15 @@ public class keywordTask {
             noResult.setUuid(uuid);
             noResultService.insertNoResult(noResult);
         });
+        List<City> cities = cityService.selectCityByIsUpdate();
+        cities.forEach(city -> {
+            sendCity(city, 30*60, vtime);
+        });
+        List<Area> areas = areaService.selectAreaByIsUpdate();
+        areas.forEach(area -> {
+            sendArea(area, 30*60, vtime);
+        });
+
         cityService.updateTime(getHour());
         areaService.updateTime(getHour());
     }

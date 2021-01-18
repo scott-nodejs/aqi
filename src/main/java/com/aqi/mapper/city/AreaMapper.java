@@ -11,4 +11,6 @@ public interface AreaMapper extends BaseMapper<Area> {
     void updateTime(Long vtime);
 
     List<NoResult> selectByNoResult();
+
+    List<Area> selectAreaByIsUpdate();
 }

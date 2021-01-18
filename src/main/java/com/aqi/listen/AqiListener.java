@@ -54,7 +54,7 @@ public class AqiListener {
                 while (true) {
                     try {
                         Thread.sleep(1000);
-                        processQueue(RabbitMqConfig.QUEUE_NAME, 100,
+                        processQueue(RabbitMqConfig.QUEUE_NAME, 10,
                                 null, new Consumer<UrlEntity>() {
                                     @Override
                                     public void accept(UrlEntity urlEntity) {
@@ -63,12 +63,23 @@ public class AqiListener {
                                         }
                                     }
                                 });
-                        processQueue(RabbitMqConfig.QUEUE_NAME_FAIL, 10,
+                        processQueue(RabbitMqConfig.QUEUE_NAME_FAIL, 5,
                                 null, new Consumer<UrlEntity>() {
                                     @Override
                                     public void accept(UrlEntity urlEntity) {
                                         if(urlEntity.getType() == 0){
                                             cityService.insertAqi(urlEntity);
+                                        }
+                                    }
+                                });
+                        processQueue(RabbitMqConfig.QUEUE_HALF_HOUR, 5,
+                                null, new Consumer<UrlEntity>() {
+                                    @Override
+                                    public void accept(UrlEntity urlEntity) {
+                                        if(urlEntity.getType() == 0){
+                                            cityService.insertAqi(urlEntity);
+                                        }else{
+                                            areaService.insertAqi(urlEntity);
                                         }
                                     }
                                 });

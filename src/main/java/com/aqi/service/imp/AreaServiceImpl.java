@@ -87,4 +87,9 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
             log.error("区域消费失败", e);
         }
     }
+
+    @Override
+    public List<Area> selectAreaByIsUpdate() {
+        return baseMapper.selectAreaByIsUpdate();
+    }
 }

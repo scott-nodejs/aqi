@@ -51,8 +51,8 @@ public class SendServiceImpl implements SendService {
     }
 
     @Override
-    public boolean sendCity(UrlEntity urlEntity, long times){
-        template.convertAndSend(RabbitMqConfig.EXCHANGE, RabbitMqConfig.ROUTINGKEY_FAIL, urlEntity, new MessagePostProcessor() {
+    public boolean sendCity(String key, UrlEntity urlEntity, long times){
+        template.convertAndSend(RabbitMqConfig.EXCHANGE, key, urlEntity, new MessagePostProcessor() {
             @Override
             public Message postProcessMessage(Message message) throws AmqpException {
                 message.getMessageProperties().setExpiration(String.valueOf(times*1000));

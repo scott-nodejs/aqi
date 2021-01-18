@@ -6,5 +6,5 @@ public interface SendService {
 
     boolean send(UrlEntity urlEntity, long times);
 
-    boolean sendCity(UrlEntity urlEntity, long times);
+    boolean sendCity(String key, UrlEntity urlEntity, long times);
 }

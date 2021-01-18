@@ -11,4 +11,6 @@ public interface CityMapper extends BaseMapper<City> {
     void updateTime(Long vtime);
 
     List<NoResult> selectByNoResult();
+
+    List<City> selectCityByIsUpdate();
 }
