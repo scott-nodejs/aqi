@@ -195,12 +195,12 @@ public class keywordTask {
         List<City> cities = cityService.selectCityByIsUpdate();
         cities.forEach(city -> {
             UrlEntity urlEntity = sendCity(city, vtime);
-            sendService.sendCity(RabbitMqConfig.QUEUE_HALF_HOUR, urlEntity, 5 * 60);
+            sendService.sendCity(RabbitMqConfig.ROUTINGKEY_HALF_HOUR, urlEntity, 5 * 60);
         });
         List<Area> areas = areaService.selectAreaByIsUpdate();
         areas.forEach(area -> {
             UrlEntity urlEntity = sendArea(area, vtime);
-            sendService.sendCity(RabbitMqConfig.QUEUE_HALF_HOUR, urlEntity, 5 * 60);
+            sendService.sendCity(RabbitMqConfig.ROUTINGKEY_HALF_HOUR, urlEntity, 5 * 60);
         });
 
         cityService.updateTime(getHour());
