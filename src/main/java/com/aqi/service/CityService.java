@@ -22,5 +22,7 @@ public interface CityService extends IService<City> {
 
     void insertAqi(UrlEntity urlEntity);
 
+    void halfAqi(UrlEntity urlEntity);
+
     List<City> selectCityByIsUpdate();
 }

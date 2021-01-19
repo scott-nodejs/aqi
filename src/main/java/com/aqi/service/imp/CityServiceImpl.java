@@ -87,6 +87,33 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
     }
 
     @Override
+    public void halfAqi(UrlEntity urlEntity) {
+        try{
+            City city = urlEntity.getCity();
+            if(city != null) {
+                long start = System.currentTimeMillis() / 1000;
+                HttpRequestConfig config = HttpRequestConfig.create().url(urlEntity.getUrl());
+                HttpRequestResult result = HttpUtils.get(config);
+                if (result == null) {
+                    log.info("拉取失败: " + city.getUrl());
+                }
+                AqiResult res = JSON.parseObject(result.getResponseText(), AqiResult.class);
+                if (res.getStatus().equals("ok")) {
+                    AqiResult.Aqi data = res.getData();
+                    int tmp = (Integer) data.getTime().get("v") - 8 * 60 * 60;
+                    if (tmp >= urlEntity.getVtime()) {
+                        aqiService.updateAqi(data);
+                        long end = System.currentTimeMillis() / 1000;
+                        log.info("超时后, 城市消费时间: " + (end - start));
+                    }
+                }
+            }
+        }catch (Exception e){
+            log.error("消费失败: ", e);
+        }
+    }
+
+    @Override
     public List<City> selectCityByIsUpdate() {
         return baseMapper.selectCityByIsUpdate();
     }

@@ -77,10 +77,11 @@ public class AqiListener {
                                     @Override
                                     public void accept(UrlEntity urlEntity) {
                                         if(urlEntity.getType() == 0){
-                                            cityService.insertAqi(urlEntity);
-                                        }else{
-                                            areaService.insertAqi(urlEntity);
+                                            cityService.halfAqi(urlEntity);
                                         }
+//                                        else{
+//                                            areaService.insertAqi(urlEntity);
+//                                        }
                                     }
                                 });
                     } catch (Exception e) {
