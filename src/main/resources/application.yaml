@@ -1,5 +1,7 @@
 server:
   port: 9090
+  servlet:
+    path: /aqi
 spring:
   #数据库连接配置
   datasource:
