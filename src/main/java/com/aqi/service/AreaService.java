@@ -4,6 +4,7 @@ import com.aqi.entity.*;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
+import java.util.Map;
 
 public interface AreaService extends IService<Area> {
 
@@ -20,4 +21,6 @@ public interface AreaService extends IService<Area> {
     void insertAqi(UrlEntity urlEntity);
 
     List<Area> selectAreaByIsUpdate();
+
+    Map<Integer,Integer> getAreaCount();
 }

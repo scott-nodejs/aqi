@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"><link rel="icon" href="https://jscdn.com.cn/highcharts/images/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+
+    </style>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="http://code.highcharts.com.cn/highcharts/8.2.2/highcharts.js"></script>
+    <script src="http://code.highcharts.com.cn/highcharts/8.2.2/modules/exporting.js"></script>
+    <script src="https://img.hcharts.cn/highcharts-plugins/highcharts-zh_CN.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+    <link rel="stylesheet" href="http://jqueryui.com/resources/demos/style.css">
+    <script src="https://code.highcharts.com/modules/variwide.js"></script>
+</head>
+<body>
+<nav class="navbar navbar-inverse" role="navigation">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">雾霾时时报</a>
+        </div>
+    </div>
+</nav>
+<div>
+    <div id="container" style="min-width:400px;height:400px"></div>
+    <div><p>日期：<input type="text" id="datepicker"></p></div>
+    <div style="display: flex;justify-content:space-around">
+        <div id="pie" style="min-width:400px;height:400px"></div>
+        <div id="react" style="min-width:800px;height:400px"></div>
+    </div>
+</div>
+
+
+<script>
+    $(function(){
+        Date.prototype.format = function(fmt) {
+            var o = {
+                "M+" : this.getMonth()+1,                 //月份
+                "d+" : this.getDate(),                    //日
+                "h+" : this.getHours(),                   //小时
+                "m+" : this.getMinutes(),                 //分
+                "s+" : this.getSeconds(),                 //秒
+                "q+" : Math.floor((this.getMonth()+3)/3), //季度
+                "S"  : this.getMilliseconds()             //毫秒
+            };
+            if(/(y+)/.test(fmt)) {
+                fmt=fmt.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length));
+            }
+            for(var k in o) {
+                if(new RegExp("("+ k +")").test(fmt)){
+                    fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));
+                }
+            }
+            return fmt;
+        }
+        let now = new Date().format("yyyy-MM-dd");
+        $.ajax({
+            url:'/getPidData/1451?tmp='+now,//请求数据的地址
+            type : "get",
+            async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
+            data : {},
+            dataType : "json",        //返回数据形式为json
+            success:function(result){
+                pie(result['pie'])
+                react(result['react'])
+            },
+            error:function(e){
+            }
+        });
+        $("#datepicker").datepicker({
+            defaultDate: new Date(),
+            dateFormat:"yy-mm-dd",
+            onSelect: function (dateText) {
+                $.ajax({
+                    url:'/getPidData/1451?tmp='+dateText,//请求数据的地址
+                    type : "get",
+                    async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
+                    data : {},
+                    dataType : "json",        //返回数据形式为json
+                    success:function(result){
+                        pie(result['pie'])
+                        react(result['react'])
+                    },
+                    error:function(e){
+                    }
+                });
+            }
+        });
+        $.ajax({
+            url:'/getAqiByCity/1451',//请求数据的地址
+            type : "get",
+            async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
+            data : {},
+            dataType : "json",        //返回数据形式为json
+            success:function(result){
+                show(result)
+            },
+            error:function(e){
+            }
+        });
+    });
+
+    function react(react) {
+        Highcharts.chart('react', {
+            chart: {
+                type: 'variwide' // varwide 依赖 varwide.js
+            },
+            title: {
+                text: '每小时AQI分布图'
+            },
+            subtitle: {
+                text: ''
+            },
+            xAxis: {
+                type: 'category',
+                title: {
+                    text: '颜色代表AQI的污染程度'
+                }
+            },
+            legend: {
+                enabled: false
+            },
+            plotOptions: {
+
+            },
+            colors: react['colors'],
+            series: [{
+                name: 'AQI指数',
+                data: react['react'],
+                dataLabels: {
+                    enabled: true,
+                    format: '{point.y:.0f}'
+                },
+                tooltip: {
+                    pointFormat: ''
+                },
+                colorByPoint: true
+            }]
+        });
+    }
+
+
+    function pie(pie) {
+        Highcharts.chart('pie', {
+            chart: {
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: false,
+                type: 'pie'
+            },
+            title: {
+                text: 'AQI比例饼图'
+            },
+            tooltip: {
+                pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+            },
+            colors: pie['colors'],
+            plotOptions: {
+                pie: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    dataLabels: {
+                        enabled: true,
+                        format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                        style: {
+                            color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                        }
+                    }
+                }
+            },
+            series: pie['pie']
+        });
+    }
+
+
+    function  show(s) {
+        var chart = Highcharts.chart({
+            chart: {
+                renderTo: 'container',
+                type: 'spline'
+            },
+            title: {
+                text: 'AQI污染指数趋势图'
+            },
+            subtitle: {
+                text: '全国AQI污染指数统计情况'
+            },
+            xAxis: {
+                type: 'datetime',
+                dateTimeLabelFormats: {
+                    millisecond: '%H:%M:%S.%L',
+                    second: '%H:%M:%S',
+                    minute: '%H:%M',
+                    hour: '%H:%M',
+                    day: '%m-%d',
+                    week: '%m-%d',
+                    month: '%Y-%m',
+                    year: '%Y'
+                }
+            },
+            yAxis: {
+                title: {
+                    text: 'AQI指数 (μg/m3)'
+                },
+                min: 0,
+                minorGridLineWidth: 0,
+                gridLineWidth: 0,
+                alternateGridColor: null,
+                plotBands: [{ // Light air
+                    from: 0,
+                    to: 50,
+                    color: 'rgba(0, 153, 102, 0.1)',
+                    label: {
+                        text: '空气质量优',
+                        style: {
+                            color: '#606060'
+                        }
+                    }
+                }, { // Light breeze
+                    from: 51,
+                    to: 100,
+                    color: 'rgba(255 ,222 ,51, 0.1)',
+                    label: {
+                        text: '空气质量良',
+                        style: {
+                            color: '#606060'
+                        }
+                    }
+                }, { // Gentle breeze
+                    from: 101,
+                    to: 150,
+                    color: 'rgba(255, 153, 51, 0.1)',
+                    label: {
+                        text: '轻度污染',
+                        style: {
+                            color: '#606060'
+                        }
+                    }
+                }, { // Moderate breeze
+                    from: 151,
+                    to: 200,
+                    color: 'rgba(204, 0, 51, 0.1)',
+                    label: {
+                        text: '中度污染',
+                        style: {
+                            color: '#606060'
+                        }
+                    }
+                }, { // Fresh breeze
+                    from: 201,
+                    to: 300,
+                    color: 'rgba(102, 0, 153, 0.1)',
+                    label: {
+                        text: '重度污染',
+                        style: {
+                            color: '#606060'
+                        }
+                    }
+                }, { // Strong breeze
+                    from: 300,
+                    to: 400,
+                    color: 'rgba(126, 0, 35, 0.1)',
+                    label: {
+                        text: '污染爆表',
+                        style: {
+                            color: '#606060'
+                        }
+                    }
+                }]
+            },
+            tooltip: {
+                dateTimeLabelFormats: {
+                    millisecond: '%H:%M:%S.%L',
+                    second: '%H:%M:%S',
+                    minute: '%H:%M',
+                    hour: '%H:%M',
+                    day: '%Y-%m-%d',
+                    week: '%m-%d',
+                    month: '%Y-%m',
+                    year: '%Y'
+                }
+            },
+            plotOptions: {
+                area: {
+                    fillColor: {
+                        linearGradient: {
+                            x1: 0,
+                            y1: 0,
+                            x2: 0,
+                            y2: 1
+                        },
+                        stops: [
+                            [0, new Highcharts.getOptions().colors[0]],
+                            [1, new Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+                        ]
+                    },
+                    marker: {
+                        radius: 2
+                    },
+                    lineWidth: 1,
+                    states: {
+                        hover: {
+                            lineWidth: 1
+                        }
+                    },
+                    threshold: null
+                }
+            },
+            series: s,
+            navigation: {
+                menuItemStyle: {
+                    fontSize: '10px'
+                }
+            }
+        });
+    }
+</script>
+</body>
+</html>

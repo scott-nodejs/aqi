@@ -13,11 +13,13 @@ import com.aqi.utils.http.HttpRequestResult;
 import com.aqi.utils.http.HttpUtils;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.aqi.schduel.keywordTask.getHour;
 
@@ -91,5 +93,21 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
     @Override
     public List<Area> selectAreaByIsUpdate() {
         return baseMapper.selectAreaByIsUpdate();
+    }
+
+    @Override
+    public Map<Integer, Integer> getAreaCount() {
+        QueryWrapper<Area> queryWrapper = new QueryWrapper();
+        queryWrapper.groupBy("perant_id");
+        queryWrapper.select("perant_id, count(*) as vtime");
+        List<Area> areas = baseMapper.selectList(queryWrapper);
+        Map<Integer,Integer> map = areas.stream().collect(Collectors.toMap(Area::getPerantId, Area::getVtime));
+        return map;
+    }
+
+    @Data
+    class Count{
+        private int cityId;
+        private int count;
     }
 }
