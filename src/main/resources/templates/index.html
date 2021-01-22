@@ -59,7 +59,7 @@
         }
         let now = new Date().format("yyyy-MM-dd");
         $.ajax({
-            url:'/getPidData/1451?tmp='+now,//请求数据的地址
+            url:'/aqi/getPidData/1451?tmp='+now,//请求数据的地址
             type : "get",
             async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
             data : {},
@@ -76,7 +76,7 @@
             dateFormat:"yy-mm-dd",
             onSelect: function (dateText) {
                 $.ajax({
-                    url:'/getPidData/1451?tmp='+dateText,//请求数据的地址
+                    url:'/aqi/getPidData/1451?tmp='+dateText,//请求数据的地址
                     type : "get",
                     async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
                     data : {},
@@ -91,7 +91,7 @@
             }
         });
         $.ajax({
-            url:'/getAqiByCity/1451',//请求数据的地址
+            url:'/aqi/getAqiByCity/1451',//请求数据的地址
             type : "get",
             async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
             data : {},
