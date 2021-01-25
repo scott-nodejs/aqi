@@ -26,12 +26,31 @@
     </div>
 </nav>
 <div>
-    <div id="container" style="min-width:400px;height:400px"></div>
-    <div><p>日期：<input type="text" id="datepicker"></p></div>
-    <div style="display: flex;justify-content:space-around">
-        <div id="pie" style="min-width:400px;height:400px"></div>
-        <div id="react" style="min-width:800px;height:400px"></div>
-    </div>
+        <div class="row">
+            <div id="container" class="col-md-12"></div>
+        </div>
+        <div class='row'>
+            <div class="col-md-4"></div>
+            <div class="col-md-1">选择日期</div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <div class='input-group date' id='datetimepicker1'>
+                        <input type='text' class="form-control" />
+                        <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-5"></div>
+        </div>
+        <div class="row">
+            <div class="col-md-1"></div>
+            <div id="pie" class="col-md-4"></div>
+            <div id="react" class="col-md-6"></div>
+            <div class="col-md-1"></div>
+        </div>
+
 </div>
 
 
@@ -71,6 +90,7 @@
             error:function(e){
             }
         });
+
         $("#datepicker").datepicker({
             defaultDate: new Date(),
             dateFormat:"yy-mm-dd",
@@ -203,9 +223,6 @@
                 }
             },
             yAxis: {
-                title: {
-                    text: 'AQI指数 (μg/m3)'
-                },
                 min: 0,
                 minorGridLineWidth: 0,
                 gridLineWidth: 0,
