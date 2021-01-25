@@ -79,9 +79,9 @@ public class AqiListener {
                                         if(urlEntity.getType() == 0){
                                             cityService.halfAqi(urlEntity);
                                         }
-//                                        else{
-//                                            areaService.insertAqi(urlEntity);
-//                                        }
+                                        else{
+                                            areaService.halfAqi(urlEntity);
+                                        }
                                     }
                                 });
                     } catch (Exception e) {

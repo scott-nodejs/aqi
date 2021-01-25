@@ -197,11 +197,11 @@ public class keywordTask {
             UrlEntity urlEntity = sendCity(city, vtime);
             sendService.sendCity(RabbitMqConfig.ROUTINGKEY_HALF_HOUR, urlEntity, 30 * 60);
         });
-//        List<Area> areas = areaService.selectAreaByIsUpdate();
-//        areas.forEach(area -> {
-//            UrlEntity urlEntity = sendArea(area, vtime);
-//            sendService.sendCity(RabbitMqConfig.ROUTINGKEY_HALF_HOUR, urlEntity, 5 * 60);
-//        });
+        List<Area> areas = areaService.selectAreaByIsUpdate();
+        areas.forEach(area -> {
+            UrlEntity urlEntity = sendArea(area, vtime);
+            sendService.sendCity(RabbitMqConfig.ROUTINGKEY_HALF_HOUR, urlEntity, 15 * 60);
+        });
 
         cityService.updateTime(getHour());
         areaService.updateTime(getHour());
