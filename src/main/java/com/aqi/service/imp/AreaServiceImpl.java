@@ -105,6 +105,33 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
         return map;
     }
 
+    @Override
+    public void halfAqi(UrlEntity urlEntity) {
+        try {
+            long start = System.currentTimeMillis() / 1000;
+            Area city = urlEntity.getArea();
+            if(city != null){
+                HttpRequestConfig config = HttpRequestConfig.create().url(urlEntity.getUrl());
+                HttpRequestResult result = HttpUtils.get(config);
+                if (result == null) {
+                    log.info("拉取失败: " + city.getUrl());
+                }
+                AqiResult res = JSON.parseObject(result.getResponseText(), AqiResult.class);
+                if ("ok".equals(res.getStatus())) {
+                    AqiResult.Aqi data = res.getData();
+                    int tmp = (Integer) data.getTime().get("v") - 8 * 60 * 60;
+                    if (tmp >= urlEntity.getVtime()) {
+                        aqiService.updateAqi(data);
+                        long end = System.currentTimeMillis() / 1000;
+                        log.info("超时后, 区域消费时间: " + (end - start));
+                    }
+                }
+            }
+        }catch (Exception e){
+            log.error("区域消费失败", e);
+        }
+    }
+
     @Data
     class Count{
         private int cityId;
