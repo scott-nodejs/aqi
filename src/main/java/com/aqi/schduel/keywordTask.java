@@ -49,7 +49,7 @@ public class keywordTask {
 
     private CompletableFuture future = new CompletableFuture();
 
-//    @Scheduled(cron = "0 0/2 * * * ?")
+    @Scheduled(cron = "0 0/2 * * * ?")
     public void keyWord(){
         List<KeyWord> keyWords = keyWordService.selectList();
         for(KeyWord kw : keyWords){
@@ -114,7 +114,7 @@ public class keywordTask {
         }
     }
 
-//    @Scheduled(cron = "0 0/5 * * * ?")
+    @Scheduled(cron = "0 0/5 * * * ?")
     public void scanCity(){
         long current = System.currentTimeMillis() / 1000;
         List<City> citys = cityService.getCity(current);
@@ -143,7 +143,7 @@ public class keywordTask {
         return urlEntity;
     }
 
-//    @Scheduled(cron = "0 30,35,40,45,50,55 * * * ?")
+    @Scheduled(cron = "0 30,35,40,45,50,55 * * * ?")
     public void scanArea(){
         long current = System.currentTimeMillis() / 1000;
         List<Area> areas = areaService.getArea(current);
@@ -173,7 +173,7 @@ public class keywordTask {
         return urlEntity;
     }
 
-//    @Scheduled(cron = "0 0 * * *  ?")
+    @Scheduled(cron = "0 0 * * *  ?")
     public void updateTime(){
         log.info("重置时间");
         List<NoResult> noResults = areaService.selectByNoResult();
