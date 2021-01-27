@@ -13,5 +13,8 @@ public interface AqiService extends IService<Aqi> {
 
     List<AqiVo> selectAqiByCityId(int cityId);
 
+    Integer selectAqiByCityName(String name);
+
+
     HourVo selectPieChartByDay(int vtime, int cityId);
 }

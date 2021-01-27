@@ -1,5 +1,6 @@
 package com.aqi.service.imp;
 
+import com.aqi.configer.exception.ResultException;
 import com.aqi.entity.*;
 import com.aqi.mapper.aqi.AqiMapper;
 import com.aqi.service.AqiService;
@@ -7,6 +8,7 @@ import com.aqi.service.CityService;
 import com.aqi.utils.TimeUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.attoparser.trace.MarkupTraceEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiService {
 
     @Autowired
@@ -89,6 +92,15 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
         aqiVo.setType("area");
         aqiVos.add(aqiVo);
         return aqiVos;
+    }
+
+    @Override
+    public Integer selectAqiByCityName(String name) {
+        City cityByName = cityService.getCityByName(name);
+        if(cityByName == null){
+            throw new ResultException(400,"很抱歉,该城市暂时没有收录");
+        }
+        return cityByName.getUid();
     }
 
     @Override

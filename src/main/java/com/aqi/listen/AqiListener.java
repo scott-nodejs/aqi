@@ -1,7 +1,9 @@
 package com.aqi.listen;
 
 import com.aqi.amqp.RabbitMqConfig;
+import com.aqi.entity.ConsumerAqi;
 import com.aqi.entity.UrlEntity;
+import com.aqi.service.AqiService;
 import com.aqi.service.AreaService;
 import com.aqi.service.CityService;
 import com.rabbitmq.client.AMQP;
@@ -36,6 +38,9 @@ public class AqiListener {
 
     @Autowired
     private AreaService areaService;
+
+    @Autowired
+    private AqiService aqiService;
 
     @Autowired
     AmqpAdmin rabbitAdmin;
@@ -84,6 +89,19 @@ public class AqiListener {
                                         }
                                     }
                                 });
+//                        processQueue(RabbitMqConfig.QUEUE_CONSUMER_AQI, 50,
+//                                null, new Consumer<ConsumerAqi>() {
+//                                    @Override
+//                                    public void accept(ConsumerAqi consumerAqi) {
+//                                        aqiService.updateAqi(consumerAqi.getAqi());
+//                                        if(consumerAqi.getCity() != null){
+//                                            cityService.updateById(consumerAqi.getCity());
+//                                        }
+//                                        if(consumerAqi.getArea() != null){
+//                                            areaService.updateById(consumerAqi.getArea());
+//                                        }
+//                                    }
+//                                });
                     } catch (Exception e) {
                         logger.error("消费失败: " , e);
                     }

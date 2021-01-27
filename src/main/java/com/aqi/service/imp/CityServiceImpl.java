@@ -1,10 +1,12 @@
 package com.aqi.service.imp;
 
 import com.alibaba.fastjson.JSON;
+import com.aqi.amqp.RabbitMqConfig;
 import com.aqi.entity.*;
 import com.aqi.mapper.city.CityMapper;
 import com.aqi.service.AqiService;
 import com.aqi.service.CityService;
+import com.aqi.service.SendService;
 import com.aqi.utils.http.HttpRequestConfig;
 import com.aqi.utils.http.HttpRequestResult;
 import com.aqi.utils.http.HttpUtils;
@@ -25,6 +27,9 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
     @Autowired
     private AqiService aqiService;
 
+    @Autowired
+    private SendService sendService;
+
     @Override
     public void insertCity(City city) {
         baseMapper.insert(city);
@@ -35,6 +40,15 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq("uid",uid);
         return baseMapper.selectOne(queryWrapper);
+    }
+
+    @Override
+    public City getCityByName(String name) {
+        String city = name.replace("市","");
+        QueryWrapper<City> queryWrapper = new QueryWrapper<>();
+        queryWrapper.like("city", city);
+        City c = baseMapper.selectOne(queryWrapper);
+        return c;
     }
 
     @Override
@@ -75,6 +89,10 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
                         city.setVtime((int) (getHour() + 60 * 60));
                         city.setIsUpdate(1);
                         baseMapper.updateById(city);
+//                        ConsumerAqi consumerAqi = new ConsumerAqi();
+//                        consumerAqi.setAqi(data);
+//                        consumerAqi.setCity(city);
+//                        sendService.sendAqiConsumer(RabbitMqConfig.ROUTINGKEY_CONSUMER_AQI,consumerAqi);
                     }
                 }
                 long end = System.currentTimeMillis() / 1000;
@@ -102,6 +120,9 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
                     AqiResult.Aqi data = res.getData();
                     int tmp = (Integer) data.getTime().get("v") - 8 * 60 * 60;
                     if (tmp >= urlEntity.getVtime()) {
+//                        ConsumerAqi consumerAqi = new ConsumerAqi();
+//                        consumerAqi.setAqi(data);
+//                        sendService.sendAqiConsumer(RabbitMqConfig.ROUTINGKEY_CONSUMER_AQI,consumerAqi);
                         aqiService.updateAqi(data);
                         long end = System.currentTimeMillis() / 1000;
                         log.info("超时后, 城市消费时间: " + (end - start));

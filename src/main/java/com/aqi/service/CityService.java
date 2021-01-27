@@ -14,6 +14,8 @@ public interface CityService extends IService<City> {
 
     City getCityByUid(int uid);
 
+    City getCityByName(String name);
+
     List<City> getCity(long currentTime);
 
     void updateTime(long vtime);

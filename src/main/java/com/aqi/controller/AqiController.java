@@ -1,6 +1,7 @@
 package com.aqi.controller;
 
 import com.aqi.service.AqiService;
+import com.aqi.utils.ResultVoUtil;
 import com.aqi.utils.TimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +17,11 @@ public class AqiController {
     @GetMapping(value = "/getAqiByCity/{id}")
     public Object getAqiByCityId(@PathVariable int id){
         return aqiService.selectAqiByCityId(id);
+    }
+
+    @GetMapping(value = "/getAqiByCityName/{name}")
+    public Object getAqiByCityName(@PathVariable String name){
+        return ResultVoUtil.success("获取成功", aqiService.selectAqiByCityName(name));
     }
 
     @GetMapping(value = "/getPidData/{id}")

@@ -1,13 +1,12 @@
 package com.aqi.service.imp;
 
 import com.alibaba.fastjson.JSON;
-import com.aqi.entity.AqiResult;
-import com.aqi.entity.Area;
-import com.aqi.entity.NoResult;
-import com.aqi.entity.UrlEntity;
+import com.aqi.amqp.RabbitMqConfig;
+import com.aqi.entity.*;
 import com.aqi.mapper.city.AreaMapper;
 import com.aqi.service.AqiService;
 import com.aqi.service.AreaService;
+import com.aqi.service.SendService;
 import com.aqi.utils.http.HttpRequestConfig;
 import com.aqi.utils.http.HttpRequestResult;
 import com.aqi.utils.http.HttpUtils;
@@ -29,6 +28,9 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
 
     @Autowired
     private AqiService aqiService;
+
+    @Autowired
+    private SendService sendService;
 
     @Override
     public void insertArea(Area area) {
@@ -80,11 +82,15 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
                         city.setVtime((int) (getHour() + 60 * 60));
                         city.setIsUpdate(1);
                         this.updateById(city);
+//                        ConsumerAqi consumerAqi = new ConsumerAqi();
+//                        consumerAqi.setAqi(data);
+//                        consumerAqi.setArea(city);
+//                        sendService.sendAqiConsumer(RabbitMqConfig.ROUTINGKEY_CONSUMER_AQI,consumerAqi);
+//                        long end = System.currentTimeMillis() / 1000;
+//                        log.info("区域消费时间: " + (end - start));
                     }
                 }
             }
-            long end = System.currentTimeMillis() / 1000;
-            log.info("区域消费时间: " + (end - start));
         }catch (Exception e){
             log.error("区域消费失败", e);
         }
@@ -122,6 +128,9 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
                     int tmp = (Integer) data.getTime().get("v") - 8 * 60 * 60;
                     if (tmp >= urlEntity.getVtime()) {
                         aqiService.updateAqi(data);
+//                        ConsumerAqi consumerAqi = new ConsumerAqi();
+//                        consumerAqi.setAqi(data);
+//                        sendService.sendAqiConsumer(RabbitMqConfig.ROUTINGKEY_CONSUMER_AQI,consumerAqi);
                         long end = System.currentTimeMillis() / 1000;
                         log.info("超时后, 区域消费时间: " + (end - start));
                     }

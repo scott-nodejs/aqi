@@ -1,6 +1,7 @@
 package com.aqi.service.imp;
 
 import com.aqi.amqp.RabbitMqConfig;
+import com.aqi.entity.ConsumerAqi;
 import com.aqi.entity.UrlEntity;
 import com.aqi.service.SendService;
 import org.slf4j.Logger;
@@ -59,6 +60,12 @@ public class SendServiceImpl implements SendService {
                 return message;
             }
         });
+        return true;
+    }
+
+    @Override
+    public boolean sendAqiConsumer(String key, ConsumerAqi consumerAqi) {
+        template.convertAndSend(RabbitMqConfig.EXCHANGE, key, consumerAqi);
         return true;
     }
 

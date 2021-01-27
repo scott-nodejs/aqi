@@ -51,7 +51,7 @@
 </nav>
 <div>
         <div class="row" style="padding-top:10px">
-            <div class="col-md-12 text-center">
+            <div class="col-md-10 text-center">
                 <div class="list-group list-group-horizontal" id="city">
                     <a href="#" id="1451" class="list-group-item active">北京</a>
                     <a href="#" id="1485" class="list-group-item">南京</a>
@@ -70,11 +70,21 @@
                     <a href="#" id = "1481" class="list-group-item">哈尔滨</a>
                     <a href="#" id="1501" class="list-group-item">厦门</a>
                     <a href="#" id="1555" class="list-group-item">三亚</a>
-                    <a href="#" id="0" class="list-group-item">
-                        <button data-toggle="modal" data-target="#myModal">
-                            更多
-                        </button>
-                    </a>
+                    <a href="#" id = "1506" class="list-group-item">青岛</a>
+                    <a href="#" id="1514" class="list-group-item">日照</a>
+                    <a href="#" id="1465" class="list-group-item">太原</a>
+                    <a href="#" id = "1474" class="list-group-item">大连</a>
+                    <a href="#" id="1565" class="list-group-item">昆明</a>
+                    <a href="#" id="1577" class="list-group-item">西宁</a>
+                    <a href="#" id = "1532" class="list-group-item">长沙</a>
+                </div>
+            </div>
+            <div class="col-md-2" style="padding-right:10px">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="keyword" placeholder="城市搜索">
+                    <span class="input-group-btn">
+                        <button class="btn btn-group" id="destroy" onclick="search()" type="button">搜索</button>
+                    </span>
                 </div>
             </div>
         </div>
@@ -104,42 +114,20 @@
             <div class="col-md-2"></div>
         </div>
 
-    <!-- 模态框（Modal） -->
-    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal fade" id="myModal">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-                        &times;
-                    </button>
-                    <h4 class="modal-title" id="myModalLabel">
-                        选择城市
-                    </h4>
+                    <h3>提示</h3>
                 </div>
-                <div class="docs-methods">
-                    <form class="form-inline">
-                        <div id="distpicker">
-                            <div class="form-group">
-                                <div style="position: relative;">
-                                    <input id="city-picker3" class="form-control" readonly type="text" value="江苏省/常州市/溧阳市" data-toggle="city-picker">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <button class="btn btn-warning" id="reset" type="button">重置</button>
-                                <button class="btn btn-danger" id="destroy" type="button">确定</button>
-                            </div>
-                        </div>
-                    </form>
+                <div class="modal-body">
+                    <p></p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭
-                    </button>
-                    <button type="button" class="btn btn-primary">
-                        提交更改
-                    </button>
+                    <button class="btn btn-info" data-dismiss="modal">关闭</button>
                 </div>
-            </div><!-- /.modal-content -->
-        </div><!-- /.modal -->
+            </div>
+        </div>
     </div>
 
 </div>
@@ -160,6 +148,29 @@
 
         })
     });
+
+    function search() {
+       let city = $('#keyword').val();
+        $.ajax({
+            url:'/aqi/getAqiByCityName/'+city,//请求数据的地址
+            type : "get",
+            async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
+            data : {},
+            dataType : "json",        //返回数据形式为json
+            success:function(result){
+                $('#keyword').val("");
+                if(result.code == 200){
+                    showByCity(result.data);
+                }else{
+                    console.log(result.msg);
+                    alert(result.msg);
+                }
+            },
+            error:function(e){
+                console.log(e)
+            }
+        });
+    }
 
     function showByCity(id) {
         Date.prototype.format = function(fmt) {
@@ -184,7 +195,7 @@
         }
         let now = new Date().format("yyyy-MM-dd");
         $.ajax({
-            url:'/aqi/getPidData/1451?tmp='+now,//请求数据的地址
+            url:'/aqi/getPidData/'+id+'?tmp='+now,//请求数据的地址
             type : "get",
             async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
             data : {},
@@ -205,7 +216,7 @@
             let  time = ev.date.valueOf();
             let datestr = new Date(time).format('yyyy-MM-dd');
             $.ajax({
-                url:'/aqi/getPidData/1451?tmp='+datestr,//请求数据的地址
+                url:'/aqi/getPidData/'+id+'?tmp='+datestr,//请求数据的地址
                 type : "get",
                 async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
                 data : {},
