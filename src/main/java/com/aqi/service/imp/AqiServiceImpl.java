@@ -65,7 +65,7 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
     }
 
     @Override
-    public List<AqiVo> selectAqiByCityId(int cityId) {
+    public AqiResponseVo selectAqiByCityId(int cityId, int type) {
         City city = cityService.getCityByUid(cityId);
         int start = city.getCity().indexOf("(");
         int end = city.getCity().indexOf(")");
@@ -84,14 +84,15 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
                 node.add(Long.valueOf(aqi.getAqi()));
             }
             return node;}).collect(Collectors.toList());
-        List<Integer> x = aqis.stream().map(aqi -> aqi.getVtime()).collect(Collectors.toList());
         List<AqiVo> aqiVos = new ArrayList<>();
         AqiVo aqiVo = new AqiVo();
         aqiVo.setName(name);
         aqiVo.setData(aqiList);
         aqiVo.setType("area");
         aqiVos.add(aqiVo);
-        return aqiVos;
+        AqiResponseVo aqiResponseVo = new AqiResponseVo();
+        aqiResponseVo.setAqis(aqiVos);
+        return aqiResponseVo;
     }
 
     @Override

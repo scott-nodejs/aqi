@@ -14,9 +14,9 @@ public class AqiController {
     @Autowired
     private AqiService aqiService;
 
-    @GetMapping(value = "/getAqiByCity/{id}")
-    public Object getAqiByCityId(@PathVariable int id){
-        return aqiService.selectAqiByCityId(id);
+    @GetMapping(value = "/getAqiByCity/{id}/{type}")
+    public Object getAqiByCityId(@PathVariable int id, @PathVariable int type){
+        return aqiService.selectAqiByCityId(id, type);
     }
 
     @GetMapping(value = "/getAqiByCityName/{name}")

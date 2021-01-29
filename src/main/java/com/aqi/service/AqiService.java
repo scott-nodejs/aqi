@@ -11,7 +11,7 @@ public interface AqiService extends IService<Aqi> {
 
     void updateAqi(AqiResult.Aqi aqi);
 
-    List<AqiVo> selectAqiByCityId(int cityId);
+    AqiResponseVo selectAqiByCityId(int cityId, int type);
 
     Integer selectAqiByCityName(String name);
 
