@@ -2,6 +2,7 @@ package com.aqi.service.imp;
 
 import com.aqi.configer.exception.ResultException;
 import com.aqi.entity.*;
+import com.aqi.global.GlobalConstant;
 import com.aqi.mapper.aqi.AqiMapper;
 import com.aqi.service.AqiService;
 import com.aqi.service.CityService;
@@ -79,9 +80,18 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
             String t = time + "000";
             node.add(Long.parseLong(t));
             if(aqi.getAqi() == 0){
+                if(type == 1){
+                    int china = getChina(Integer.valueOf(aqi.getPm25().replace(".0","")));
+                    node.add(Long.valueOf(china));
+                }
                 node.add(Long.valueOf(aqi.getPm25().replace(".0","")));
             }else{
-                node.add(Long.valueOf(aqi.getAqi()));
+                if(type == 1){
+                    int china = getChina(aqi.getAqi());
+                    node.add(Long.valueOf(china));
+                }else{
+                    node.add(Long.valueOf(aqi.getAqi()));
+                }
             }
             return node;}).collect(Collectors.toList());
         List<AqiVo> aqiVos = new ArrayList<>();
@@ -94,6 +104,8 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
         aqiResponseVo.setAqis(aqiVos);
         return aqiResponseVo;
     }
+
+
 
     @Override
     public Integer selectAqiByCityName(String name) {
@@ -233,5 +245,80 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
             return "#660099";
         }
         return "#7E0023";
+    }
+
+    public int getChina(int aqi){
+        if(aqi > 0 && aqi <= 50){
+            float degree = getdegree(trafloat(GlobalConstant.a[0][3]),
+                    trafloat(GlobalConstant.a[0][2]),
+                    trafloat(GlobalConstant.a[0][1]),
+                    trafloat(GlobalConstant.a[0][0]), aqi);
+            float chinadegree = getChinaDegree(trafloat(GlobalConstant.c[0][3]),
+                    trafloat(GlobalConstant.c[0][2]),
+                    trafloat(GlobalConstant.c[0][1]),
+                    trafloat(GlobalConstant.c[0][0]),degree);
+            return (int) chinadegree;
+        }else if(aqi > 50 && aqi <= 100){
+            float degree = getdegree(trafloat(GlobalConstant.a[1][3]),
+                    trafloat(GlobalConstant.a[1][2]),
+                    trafloat(GlobalConstant.a[1][1]),
+                    trafloat(GlobalConstant.a[1][0]), aqi);
+            float chinadegree = getChinaDegree(trafloat(GlobalConstant.c[1][3]),
+                    trafloat(GlobalConstant.c[1][2]),
+                    trafloat(GlobalConstant.c[1][1]),
+                    trafloat(GlobalConstant.c[1][0]),degree);
+            return (int) chinadegree;
+        }else if(aqi > 100 && aqi <= 150){
+            float degree = getdegree(trafloat(GlobalConstant.a[2][3]),
+                    trafloat(GlobalConstant.a[2][2]),
+                    trafloat(GlobalConstant.a[2][1]),
+                    trafloat(GlobalConstant.a[2][0]), aqi);
+            float chinadegree = getChinaDegree(trafloat(GlobalConstant.c[2][3]),
+                    trafloat(GlobalConstant.c[2][2]),
+                    trafloat(GlobalConstant.c[2][1]),
+                    trafloat(GlobalConstant.c[2][0]),degree);
+            return (int) chinadegree;
+        }else if(aqi > 150 && aqi <= 200){
+            float degree = getdegree(trafloat(GlobalConstant.a[3][3]),
+                    trafloat(GlobalConstant.a[3][2]),
+                    trafloat(GlobalConstant.a[3][1]),
+                    trafloat(GlobalConstant.a[3][0]), aqi);
+            float chinadegree = getChinaDegree(trafloat(GlobalConstant.c[3][3]),
+                    trafloat(GlobalConstant.c[3][2]),
+                    trafloat(GlobalConstant.c[3][1]),
+                    trafloat(GlobalConstant.c[3][0]),degree);
+            return (int) chinadegree;
+        }else if(aqi > 200 && aqi <= 300){
+            float degree = getdegree(trafloat(GlobalConstant.a[4][3]),
+                    trafloat(GlobalConstant.a[4][2]),
+                    trafloat(GlobalConstant.a[4][1]),
+                    trafloat(GlobalConstant.a[4][0]), aqi);
+            float chinadegree = getChinaDegree(trafloat(GlobalConstant.c[4][3]),
+                    trafloat(GlobalConstant.c[4][2]),
+                    trafloat(GlobalConstant.c[4][1]),
+                    trafloat(GlobalConstant.c[4][0]),degree);
+            return (int) chinadegree;
+        }
+        float degree = getdegree(trafloat(GlobalConstant.a[5][3]),
+                trafloat(GlobalConstant.a[5][2]),
+                trafloat(GlobalConstant.a[5][1]),
+                trafloat(GlobalConstant.a[5][0]), aqi);
+        float chinadegree = getChinaDegree(trafloat(GlobalConstant.c[5][3]),
+                trafloat(GlobalConstant.c[5][2]),
+                trafloat(GlobalConstant.c[5][1]),
+                trafloat(GlobalConstant.c[5][0]),degree);
+        return (int) chinadegree;
+    }
+
+    public float trafloat(int v){
+        return (float) (v * 1.0 / 10);
+    }
+
+    public float getdegree(float ih, float il, float ch, float cl, int aqi){
+        return  (aqi - il)*((ch - cl)/(ih - il)) + cl;
+    }
+
+    public float getChinaDegree(float ih, float il, float ch, float cl, float degree){
+        return ((ih - il) / (ch - cl)) * (degree - cl) + il;
     }
 }
