@@ -11,10 +11,10 @@ public interface AqiService extends IService<Aqi> {
 
     void updateAqi(AqiResult.Aqi aqi);
 
-    AqiResponseVo selectAqiByCityId(int cityId, int type);
+    List<AqiVo> selectAqiByCityId(int cityId, int type);
 
     Integer selectAqiByCityName(String name);
 
 
-    HourVo selectPieChartByDay(int vtime, int cityId);
+    HourVo selectPieChartByDay(int vtime, int cityId, int type);
 }

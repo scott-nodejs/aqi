@@ -24,9 +24,9 @@ public class AqiController {
         return ResultVoUtil.success("获取成功", aqiService.selectAqiByCityName(name));
     }
 
-    @GetMapping(value = "/getPidData/{id}")
-    public Object getPidData(@PathVariable int id, String tmp){
+    @GetMapping(value = "/getPidData/{id}/{type}")
+    public Object getPidData(@PathVariable int id, @PathVariable int type, String tmp){
         int l = (int) (TimeUtil.convertStringToMillis(tmp+ " 00:00:00") / 1000);
-        return aqiService.selectPieChartByDay(l,id);
+        return aqiService.selectPieChartByDay(l,id, type);
     }
 }

@@ -66,7 +66,7 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
     }
 
     @Override
-    public AqiResponseVo selectAqiByCityId(int cityId, int type) {
+    public List<AqiVo> selectAqiByCityId(int cityId, int type) {
         City city = cityService.getCityByUid(cityId);
         int start = city.getCity().indexOf("(");
         int end = city.getCity().indexOf(")");
@@ -100,9 +100,7 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
         aqiVo.setData(aqiList);
         aqiVo.setType("area");
         aqiVos.add(aqiVo);
-        AqiResponseVo aqiResponseVo = new AqiResponseVo();
-        aqiResponseVo.setAqis(aqiVos);
-        return aqiResponseVo;
+        return aqiVos;
     }
 
 
@@ -117,7 +115,7 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
     }
 
     @Override
-    public HourVo selectPieChartByDay(int vtime, int cityId) {
+    public HourVo selectPieChartByDay(int vtime, int cityId, int type) {
         int start = vtime;
         int end = vtime + 24*60*60;
         QueryWrapper<Aqi> queryWrapper = new QueryWrapper<>();
@@ -131,17 +129,23 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
             List<Object> node = new ArrayList<>();
             String hour = aqi.getFtime().split(" ")[1];
             node.add(hour);
-            node.add(aqi.getAqi());
+            if(type == 1){
+                int china = getChina(aqi.getAqi());
+                node.add(china);
+                reactColors.add(getColor(china));
+            }else{
+                node.add(aqi.getAqi());
+                reactColors.add(getColor(aqi.getAqi()));
+            }
             node.add(50);
             react.add(node);
-            reactColors.add(getColor(aqi.getAqi()));
         }
-        double good = getCondition(aqis, 0, 50);
-        double so = getCondition(aqis, 50, 100);
-        double light = getCondition(aqis, 100, 150);
-        double bad = getCondition(aqis, 150, 200);
-        double tbad = getCondition(aqis, 200, 300);
-        double ttbad = getCondition(aqis, 300, 1000);
+        double good = getCondition(aqis, 0, 50, type);
+        double so = getCondition(aqis, 50, 100, type);
+        double light = getCondition(aqis, 100, 150, type);
+        double bad = getCondition(aqis, 150, 200, type);
+        double tbad = getCondition(aqis, 200, 300, type);
+        double ttbad = getCondition(aqis, 300, 1000, type);
         List<Map<String, Object>> sort = new ArrayList<>();
         Map<String,Object> gmap = new HashMap<>();
         gmap.put("name","优");
@@ -222,10 +226,16 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
         return hourVo;
     }
 
-    public double getCondition(List<Aqi> aqis, int start, int end){
+    public double getCondition(List<Aqi> aqis, int start, int end, int type){
         List<Integer> collect = aqis.stream().map(aqi -> {
             if (aqi.getAqi() == 0) {
+                if(type == 1){
+                    return getChina(Integer.valueOf(aqi.getPm25().replace(".0", "")));
+                }
                 return Integer.valueOf(aqi.getPm25().replace(".0", ""));
+            }
+            if(type == 1){
+                return getChina(aqi.getAqi());
             }
             return aqi.getAqi();
         }).filter(v -> v > start && v <= end).collect(Collectors.toList());

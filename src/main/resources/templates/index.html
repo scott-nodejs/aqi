@@ -140,16 +140,15 @@
 
 <script>
     $(function(){
-        $(".selectpicker").selectpicker('val','1');//默认选中 value=“selectrateid” 的option
+        $(".selectpicker").selectpicker('val','2');//默认选中 value=“selectrateid” 的option
         $(".selectpicker").selectpicker('refresh');
-        let selected = $('.selectpicker option:selected').val();
-        showByCity(1451, selected);
+        showByCity(1451, $('.selectpicker option:selected').val());
         $('#city a').on('click', function (e) {
             e.preventDefault()
             $(this).siblings('a').removeClass('active');  // 删除其兄弟元素的样式
             $(this).addClass('active');
             if($(this).attr("id") != '0'){
-                showByCity($(this).attr("id"), selected);
+                showByCity($(this).attr("id"), $('.selectpicker option:selected').val());
             }else{
                 console.log("待处理");
             }
@@ -157,6 +156,8 @@
 
         $('.selectpicker').on('change', function(){
             var selected = $('.selectpicker option:selected').val();
+            $(".selectpicker").selectpicker('val',selected);//默认选中 value=“selectrateid” 的option
+            $(".selectpicker").selectpicker('refresh');
             $('#city').children().map(function (index, e) {
                 if($(this).hasClass('active')){
                     showByCity($(this).attr('id'), selected);
@@ -213,7 +214,7 @@
         }
         let now = new Date().format("yyyy-MM-dd");
         $.ajax({
-            url:'/aqi/getPidData/'+id+'?tmp='+now,//请求数据的地址
+            url:'/aqi/getPidData/'+id+'/'+type+'?tmp='+now,//请求数据的地址
             type : "get",
             async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
             data : {},
@@ -251,7 +252,7 @@
         });
 
         $.ajax({
-            url:'/aqi/getAqiByCity/'+id,//请求数据的地址
+            url:'/aqi/getAqiByCity/'+id +'/'+ type,//请求数据的地址
             type : "get",
             async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
             data : {},
