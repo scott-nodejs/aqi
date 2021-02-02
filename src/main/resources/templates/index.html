@@ -42,58 +42,9 @@
 
 </head>
 <body>
-<nav class="navbar navbar-inverse" role="navigation">
-    <div class="container-fluid">
-        <div class="navbar-header">
-            <a class="navbar-brand" href="#">雾霾时时报</a>
-        </div>
-        <div class="nav navbar-nav" style="padding-top:10px;padding-right: 30px; height: 15px">
-            <select class="selectpicker" style="height: 15px">
-                <option value="1">中国标椎</option>
-                <option value="2">美国标准</option>
-            </select>
-        </div>
-    </div>
-</nav>
-<div>
-        <div class="row" style="padding-top:10px">
-            <div class="col-md-10 text-center">
-                <div class="list-group list-group-horizontal" id="city">
-                    <a href="#" id="1451" class="list-group-item active">北京</a>
-                    <a href="#" id="1485" class="list-group-item">南京</a>
-                    <a href="#" id="1437" class="list-group-item">上海</a>
-                    <a href="#" id="1539" class="list-group-item">深圳</a>
-                    <a href="#" id="1449" class="list-group-item">广州</a>
-                    <a href="#" id = "1453" class="list-group-item">重庆</a>
-                    <a href="#" id = "1450" class="list-group-item">成都</a>
-                    <a href="#" id = "1529" class="list-group-item">武汉</a>
-                    <a href="#" id="1522" class="list-group-item">郑州</a>
-                    <a href="#" id="1452" class="list-group-item">天津</a>
-                    <a href="#" id = "1569" class="list-group-item">西安</a>
-                    <a href="#" id = "1470" class="list-group-item">呼和浩特</a>
-                    <a href="#" id="1580" class="list-group-item">乌鲁木齐</a>
-                    <a href="#" id="1454" class="list-group-item">石家庄</a>
-                    <a href="#" id = "1481" class="list-group-item">哈尔滨</a>
-                    <a href="#" id="1501" class="list-group-item">厦门</a>
-                    <a href="#" id="1555" class="list-group-item">三亚</a>
-                    <a href="#" id = "1506" class="list-group-item">青岛</a>
-                    <a href="#" id="1514" class="list-group-item">日照</a>
-                    <a href="#" id="1465" class="list-group-item">太原</a>
-                    <a href="#" id = "1474" class="list-group-item">大连</a>
-                    <a href="#" id="1565" class="list-group-item">昆明</a>
-                    <a href="#" id = "1532" class="list-group-item">长沙</a>
-                </div>
-            </div>
-            <div class="col-md-2" style="padding-right:10px">
-                <div class="input-group">
-                    <input type="text" class="form-control" id="keyword" placeholder="城市搜索">
-                    <span class="input-group-btn">
-                        <button class="btn btn-group" id="destroy" onclick="search()" type="button">搜索</button>
-                    </span>
-                </div>
-            </div>
-        </div>
-
+        <div class="row" th:insert="~{public :: public_top(0)}"></div>
+        <div>
+        <div th:insert="~{public :: public_city}"></div>
         <div class="row">
             <div id="container" class="col-md-12"></div>
         </div>
@@ -119,27 +70,12 @@
             <div class="col-md-2"></div>
         </div>
 
-    <div class="modal fade" id="myModal">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>提示</h3>
-                </div>
-                <div class="modal-body">
-                    <p></p>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-info" data-dismiss="modal">关闭</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
 </div>
 
 
 <script>
     $(function(){
+        $(".headerpage").load("header.html");
         $(".selectpicker").selectpicker('val','2');//默认选中 value=“selectrateid” 的option
         $(".selectpicker").selectpicker('refresh');
         showByCity(1451, $('.selectpicker option:selected').val());
