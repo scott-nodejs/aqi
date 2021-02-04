@@ -141,6 +141,13 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
         }
     }
 
+    @Override
+    public List<Area> getAreaListByPerantId(int parentId) {
+        QueryWrapper<Area> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("perant_id", parentId);
+        return baseMapper.selectList(queryWrapper);
+    }
+
     @Data
     class Count{
         private int cityId;

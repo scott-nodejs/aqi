@@ -5,6 +5,7 @@ import com.aqi.entity.*;
 import com.aqi.global.GlobalConstant;
 import com.aqi.mapper.aqi.AqiMapper;
 import com.aqi.service.AqiService;
+import com.aqi.service.AreaService;
 import com.aqi.service.CityService;
 import com.aqi.utils.TimeUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -23,6 +24,9 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
 
     @Autowired
     CityService cityService;
+
+    @Autowired
+    AreaService areaService;
 
     @Override
     public void insertAqi(Aqi aqi) {
@@ -112,6 +116,88 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
             throw new ResultException(400,"很抱歉,该城市暂时没有收录");
         }
         return cityByName.getUid();
+    }
+
+    @Override
+    public AreaAqiResponseVo selectAreaAqiByCityId(int cityId, int type, int vtime) {
+        List<Area> areas = areaService.getAreaListByPerantId(cityId);
+        List<String> x = areas.stream().map(area -> {
+            int start = area.getName().indexOf("(");
+            int end = area.getName().indexOf(")");
+            return area.getName().substring(start+1,end);
+        }).collect(Collectors.toList());
+        List<List<Integer>> totalAqi = new ArrayList<>();
+        List<Integer> hours = gen24Hours(vtime);
+        areas.forEach(area -> {
+            int start = vtime;
+            int end = vtime + 24*60*60;
+            QueryWrapper<Aqi> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("uid", area.getUid());
+            queryWrapper.between("vtime", start, end);
+            queryWrapper.orderByAsc("vtime");
+            List<Aqi> aqis = baseMapper.selectList(queryWrapper);
+            List<Integer> collect = hours.stream().map(hour -> {
+                return 0;
+            }).collect(Collectors.toList());
+            if(aqis != null && aqis.size() > 0){
+                for(int i = 0; i < collect.size() ; i++){
+                    for(int j = 0; j < aqis.size(); j++){
+                        if(hours.get(i) == aqis.get(j).getVtime()){
+                            Aqi aqi = aqis.get(j);
+                            int v;
+                            if (aqi.getAqi() == 0) {
+                                if (type == 1) {
+                                    v = getChina(Integer.valueOf(aqi.getPm25().replace(".0", "")));
+                                }else{
+                                    v = Integer.parseInt(aqi.getPm25().replace(".0", ""));
+                                }
+                            } else {
+                                if (type == 1) {
+                                    v = getChina(aqi.getAqi());
+                                } else {
+                                    v = aqi.getAqi();
+                                }
+                            }
+                            collect.set(i, v);
+                            break;
+                        }
+                    }
+                }
+            }
+            totalAqi.add(collect);
+        });
+
+        List<AreaAqiVo> areaAqiVos = new ArrayList<>();
+        for(int i = 0; i < hours.size(); i++){
+            AreaAqiVo areaAqiVo = new AreaAqiVo();
+            areaAqiVo.setName(TimeUtil.convertMillisToString(((long)hours.get(i)) * 1000));
+            List<Map<String,Object>> data = new ArrayList<>();
+            for(int j = 0; j < totalAqi.size(); j++){
+                Map<String, Object> map = new HashMap<>();
+                int aqi = totalAqi.get(j).get(i);
+                String color = getColor(aqi);
+                map.put("y", aqi);
+                map.put("color", color);
+                data.add(map);
+            }
+            Collections.sort(data, new Comparator<Map<String, Object>>() {
+                @Override
+                public int compare(Map<String, Object> map1, Map<String, Object> map2) {
+                    if((int)map1.get("y") > (int)map2.get("y")){
+                        return -1;
+                    }else{
+                        return 1;
+                    }
+                }
+            });
+            areaAqiVo.setData(data);
+            areaAqiVos.add(areaAqiVo);
+        }
+
+        AreaAqiResponseVo areaAqiResponseVo = new AreaAqiResponseVo();
+        areaAqiResponseVo.setAqis(areaAqiVos);
+        areaAqiResponseVo.setX(x);
+        return areaAqiResponseVo;
     }
 
     @Override
@@ -224,6 +310,23 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
         hourVo.setPie(pieNode);
         hourVo.setReact(reactNode);
         return hourVo;
+    }
+
+    public List<Integer> gen24Hours(int vtime){
+        int current = (int)(System.currentTimeMillis() / 1000);
+        List<Integer> hours = new ArrayList<>();
+        int c = current - vtime;
+        if(c > 0 && c < 24*60*60){
+            int count = c / 3600;
+            for(int i = 0; i < count; i++){
+                hours.add(vtime + i*60*60);
+            }
+        }else{
+            for(int i = 0; i < 24; i++){
+                hours.add(vtime + i*60*60);
+            }
+        }
+        return hours;
     }
 
     public double getCondition(List<Aqi> aqis, int start, int end, int type){

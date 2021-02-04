@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"><link rel="icon" href="https://jscdn.com.cn/highcharts/images/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        .list-group-horizontal .list-group-item {
+            display: inline-block;
+        }
+        .list-group-horizontal .list-group-item {
+            margin-bottom: 0;
+            margin-left:-4px;
+            margin-right: 0;
+        }
+        .list-group-horizontal .list-group-item:first-child {
+            border-top-right-radius:0;
+            border-bottom-left-radius:4px;
+        }
+        .list-group-horizontal .list-group-item:last-child {
+            border-top-right-radius:4px;
+            border-bottom-left-radius:0;
+        }
+    </style>
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcss.com/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdn.bootcss.com/moment.js/2.24.0/moment-with-locales.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-select/1.14.0-beta/css/bootstrap-select.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap-select/1.14.0-beta/js/bootstrap-select.min.js"></script>
+    <script src="http://code.highcharts.com.cn/highcharts/8.2.2/highcharts.js"></script>
+    <script src="http://code.highcharts.com.cn/highcharts/8.2.2/modules/exporting.js"></script>
+    <script src="https://img.hcharts.cn/highcharts-plugins/highcharts-zh_CN.js"></script>
+    <script src="https://code.highcharts.com/modules/variwide.js"></script>
+    <!--    <link th:href="@{../static/css/city-picker.css}" rel="stylesheet" type="text/css" />-->
+    <!--    <script th:src="@{../static/js/city-picker.data.js}"></script>-->
+    <!--    <script th:src="@{../static/js/city-picker.js}"></script>-->
+    <!--<link href="/css/city-picker.css" rel="stylesheet" type="text/css" />-->
+    <!--<script src="/js/city-picker.data.js"></script>-->
+    <!--<script src="/js/city-picker.js"></script>-->
+
+</head>
+<body>
+<div class="row" th:insert="~{public :: public_top(1)}"></div>
+<div>
+    <div th:insert="~{public :: public_city}"></div>
+</div>
+<div>
+    <div class="col-md-12">
+        <ul id="myTab" class="nav nav-tabs">
+            <li class="active">
+                <a href="#day" data-toggle="tab">
+                    按日显示
+                </a>
+            </li>
+            <li><a href="#mouth" data-toggle="tab">按月显示</a></li>
+            <li><a href="#year" data-toggle="tab">按年显示</a></li>
+        </ul>
+        <div id="myTabContent" class="tab-content">
+            <div class="tab-pane fade in active" id="day">
+                <div class='row' style="padding-top:10px">
+                    <div class="col-md-5"></div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <div class='input-group date' id='datetimepicker1'>
+                                <input type='text' class="form-control" />
+                                <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-calendar"></span></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-5"></div>
+                </div>
+                <div id="container"></div>
+            </div>
+            <div class="tab-pane fade" id="mouth">
+                <div id="container1">mouth</div>
+            </div>
+            <div class="tab-pane fade" id="year">
+                <div id="container2">year</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+<script>
+    $(function () {
+        $(".selectpicker").selectpicker('val','2');//默认选中 value=“selectrateid” 的option
+        $(".selectpicker").selectpicker('refresh');
+        show(1451, $('.selectpicker option:selected').val());
+        $('#city a').on('click', function (e) {
+            e.preventDefault()
+            $(this).siblings('a').removeClass('active');  // 删除其兄弟元素的样式
+            $(this).addClass('active');
+            if($(this).attr("id") != '0'){
+                show($(this).attr("id"), $('.selectpicker option:selected').val());
+            }else{
+                console.log("待处理");
+            }
+        })
+
+        $('.selectpicker').on('change', function(){
+            var selected = $('.selectpicker option:selected').val();
+            $(".selectpicker").selectpicker('val',selected);//默认选中 value=“selectrateid” 的option
+            $(".selectpicker").selectpicker('refresh');
+            $('#city').children().map(function (index, e) {
+                if($(this).hasClass('active')){
+                    show($(this).attr('id'), selected);
+                }
+            });
+        });
+    })
+
+    function show(id, type) {
+        Date.prototype.format = function(fmt) {
+            var o = {
+                "M+" : this.getMonth()+1,                 //月份
+                "d+" : this.getDate(),                    //日
+                "h+" : this.getHours(),                   //小时
+                "m+" : this.getMinutes(),                 //分
+                "s+" : this.getSeconds(),                 //秒
+                "q+" : Math.floor((this.getMonth()+3)/3), //季度
+                "S"  : this.getMilliseconds()             //毫秒
+            };
+            if(/(y+)/.test(fmt)) {
+                fmt=fmt.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length));
+            }
+            for(var k in o) {
+                if(new RegExp("("+ k +")").test(fmt)){
+                    fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));
+                }
+            }
+            return fmt;
+        }
+        let now = new Date().format("yyyy-MM-dd");
+        $.ajax({
+            url:'/aqi/getAreaAqiByCity/'+id+'/'+type+'?tmp='+now,//请求数据的地址
+            type : "get",
+            async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
+            data : {},
+            dataType : "json",        //返回数据形式为json
+            success:function(result){
+                let count = (result['x']).length;
+                $("#container").css("height", count* 500);
+                areaReact(result['x'], result['aqis']);
+            },
+            error:function(e){
+            }
+        });
+        $('#datetimepicker1').datetimepicker({
+            format: 'YYYY-MM-DD',
+            locale: moment.locale('zh-cn'),
+            defaultDate: now,
+        }).on('dp.change',function(ev){
+            ev.preventDefault()
+            let  time = ev.date.valueOf();
+            let datestr = new Date(time).format('yyyy-MM-dd');
+            console.log(id);
+            $.ajax({
+                url:'/aqi/getAreaAqiByCity/'+id+'/'+ type+'?tmp='+datestr,//请求数据的地址
+                type : "get",
+                async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
+                data : {},
+                dataType : "json",        //返回数据形式为json
+                success:function(result){
+                    let count = (result['x']).length;
+                    $("#container").css("height", count * 500);
+                    areaReact(result['x'], result['aqis']);
+                },
+                error:function(e){
+                }
+            });
+        });
+    }
+
+    function areaReact(x, v) {
+        var chart = Highcharts.chart('container', {
+            chart: {
+                type: 'bar'
+            },
+            title: {
+                text: '城市区域每小时的AQI条形图'
+            },
+            subtitle: {
+                text: '数据仅供参考'
+            },
+            xAxis: {
+                categories: x,
+                title: {
+                    text: null
+                }
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: ' ()',
+                    align: 'high'
+                },
+                labels: {
+                    overflow: 'justify'
+                }
+            },
+            tooltip: {
+                valueSuffix: ' '
+            },
+            plotOptions: {
+                bar: {
+                    dataLabels: {
+                        enabled: true,
+                        allowOverlap: true // 允许数据标签重叠
+                    }
+                }
+            },
+            series: v
+        });
+    }
+</script>
+</html>

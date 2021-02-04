@@ -25,4 +25,6 @@ public interface AreaService extends IService<Area> {
     Map<Integer,Integer> getAreaCount();
 
     void halfAqi(UrlEntity urlEntity);
+
+    List<Area> getAreaListByPerantId(int parentId);
 }

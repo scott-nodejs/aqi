@@ -17,4 +17,9 @@ public class IndexController {
     public String noResult(Model model) {
         return "noresult";
     }
+
+    @RequestMapping("/area")
+    public String area(Model model) {
+        return "area";
+    }
 }
