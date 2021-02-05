@@ -209,21 +209,20 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
         queryWrapper.between("vtime", start, end);
         queryWrapper.orderByAsc("vtime");
         List<Aqi> aqis = baseMapper.selectList(queryWrapper);
-        List<List<Object>> react = new ArrayList<>();
+        List<Map<String, Object>> react = new ArrayList<>();
         List<String> reactColors = new ArrayList<>();
         for(Aqi aqi : aqis){
-            List<Object> node = new ArrayList<>();
+            Map<String, Object> node = new HashMap<>();
             String hour = aqi.getFtime().split(" ")[1];
-            node.add(hour);
+            node.put("name",hour);
             if(type == 1){
                 int china = getChina(aqi.getAqi());
-                node.add(china);
-                reactColors.add(getColor(china));
+                node.put("y",china);
+                node.put("color", getColor(china));
             }else{
-                node.add(aqi.getAqi());
-                reactColors.add(getColor(aqi.getAqi()));
+                node.put("y", aqi.getAqi());
+                node.put("color", getColor(aqi.getAqi()));
             }
-            node.add(50);
             react.add(node);
         }
         double good = getCondition(aqis, 0, 50, type);

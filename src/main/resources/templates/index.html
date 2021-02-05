@@ -31,14 +31,7 @@
     <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap-select/1.14.0-beta/js/bootstrap-select.min.js"></script>
     <script src="http://code.highcharts.com.cn/highcharts/8.2.2/highcharts.js"></script>
     <script src="http://code.highcharts.com.cn/highcharts/8.2.2/modules/exporting.js"></script>
-    <script src="https://img.hcharts.cn/highcharts-plugins/highcharts-zh_CN.js"></script>
     <script src="https://code.highcharts.com/modules/variwide.js"></script>
-<!--    <link th:href="@{../static/css/city-picker.css}" rel="stylesheet" type="text/css" />-->
-<!--    <script th:src="@{../static/js/city-picker.data.js}"></script>-->
-<!--    <script th:src="@{../static/js/city-picker.js}"></script>-->
-        <!--<link href="/css/city-picker.css" rel="stylesheet" type="text/css" />-->
-        <!--<script src="/js/city-picker.data.js"></script>-->
-        <!--<script src="/js/city-picker.js"></script>-->
 
 </head>
 <body>
@@ -172,7 +165,7 @@
             let datestr = new Date(time).format('yyyy-MM-dd');
             console.log(id);
             $.ajax({
-                url:'/aqi/getPidData/'+id+'?tmp='+datestr,//请求数据的地址
+                url:'/aqi/getPidData/'+id+'/'+type+'?tmp='+datestr,//请求数据的地址
                 type : "get",
                 async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
                 data : {},
@@ -203,40 +196,38 @@
     function react(react) {
         Highcharts.chart('react', {
             chart: {
-                type: 'variwide' // varwide 依赖 varwide.js
+                type: 'column'
             },
             title: {
-                text: '每小时AQI分布图'
+                text: 'AQI每小时数据'
             },
             subtitle: {
                 text: ''
             },
             xAxis: {
                 type: 'category',
+                labels: {
+                    rotation: -45  // 设置轴标签旋转角度
+                }
+            },
+            yAxis: {
+                min: 0,
                 title: {
-                    text: '颜色代表AQI的污染程度'
+                    text: '人口 (百万)'
                 }
             },
             legend: {
                 enabled: false
             },
-            plotOptions: {
-
+            tooltip: {
+                pointFormat: 'AQI: <b>{point.y:.1f}</b>'
             },
             colors: react['colors'],
             series: [{
-                name: 'AQI指数',
+                name: 'AQI',
                 data: react['react'],
-                dataLabels: {
-                    enabled: true,
-                    format: '{point.y:.0f}'
-                },
-                tooltip: {
-                    pointFormat: ''
-                },
-                colorByPoint: true
             }]
-        });
+    });
     }
 
 

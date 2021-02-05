@@ -3,6 +3,7 @@ package com.aqi.entity;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class HourVo {
@@ -12,7 +13,7 @@ public class HourVo {
     @Data
     public static class ReactNode{
         private List<String> colors;
-        private List<List<Object>> react;
+        private List<Map<String, Object>> react;
     }
 
     @Data
