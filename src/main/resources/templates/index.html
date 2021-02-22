@@ -68,6 +68,28 @@
 
 <script>
     $(function(){
+        Date.prototype.format = function(fmt) {
+            var o = {
+                "M+" : this.getMonth()+1,                 //月份
+                "d+" : this.getDate(),                    //日
+                "h+" : this.getHours(),                   //小时
+                "m+" : this.getMinutes(),                 //分
+                "s+" : this.getSeconds(),                 //秒
+                "q+" : Math.floor((this.getMonth()+3)/3), //季度
+                "S"  : this.getMilliseconds()             //毫秒
+            };
+            if(/(y+)/.test(fmt)) {
+                fmt=fmt.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length));
+            }
+            for(var k in o) {
+                if(new RegExp("("+ k +")").test(fmt)){
+                    fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));
+                }
+            }
+            return fmt;
+        }
+        let now = new Date().format("yyyy-MM-dd");
+
         $(".selectpicker").selectpicker('val','2');//默认选中 value=“selectrateid” 的option
         $(".selectpicker").selectpicker('refresh');
         showByCity(1451, $('.selectpicker option:selected').val());
@@ -75,6 +97,7 @@
             e.preventDefault()
             $(this).siblings('a').removeClass('active');  // 删除其兄弟元素的样式
             $(this).addClass('active');
+            $(".form-control").val(now);
             if($(this).attr("id") != '0'){
                 showByCity($(this).attr("id"), $('.selectpicker option:selected').val());
             }else{
@@ -89,6 +112,35 @@
             $('#city').children().map(function (index, e) {
                 if($(this).hasClass('active')){
                     showByCity($(this).attr('id'), selected);
+                }
+            });
+        });
+
+        $('#datetimepicker1').datetimepicker({
+            format: 'YYYY-MM-DD',
+            locale: moment.locale('zh-cn'),
+            defaultDate: now,
+        }).on('dp.change',function(ev){
+            let  time = ev.date.valueOf();
+            let datestr = new Date(time).format('yyyy-MM-dd');
+            var selected = $('.selectpicker option:selected').val();
+            $('#city').children().map(function (index, e) {
+                if($(this).hasClass('active')){
+                    let id = $(this).attr('id');
+                    console.log(id);
+                    $.ajax({
+                        url:'/aqi/getPidData/'+id+'/'+selected+'?tmp='+datestr,//请求数据的地址
+                        type : "get",
+                        async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
+                        data : {},
+                        dataType : "json",        //返回数据形式为json
+                        success:function(result){
+                            pie(result['pie'])
+                            react(result['react'])
+                        },
+                        error:function(e){
+                        }
+                    });
                 }
             });
         });
@@ -141,6 +193,14 @@
             return fmt;
         }
         let now = new Date().format("yyyy-MM-dd");
+
+        $('#datetimepicker1').val('');
+        $('#datetimepicker1').datetimepicker({
+            format: 'YYYY-MM-DD',
+            locale: moment.locale('zh-cn'),
+            defaultDate: now,
+        });
+
         $.ajax({
             url:'/aqi/getPidData/'+id+'/'+type+'?tmp='+now,//请求数据的地址
             type : "get",
@@ -155,29 +215,6 @@
             }
         });
 
-        $('#datetimepicker1').datetimepicker({
-            format: 'YYYY-MM-DD',
-            locale: moment.locale('zh-cn'),
-            defaultDate: now,
-        }).on('dp.change',function(ev){
-            ev.preventDefault()
-            let  time = ev.date.valueOf();
-            let datestr = new Date(time).format('yyyy-MM-dd');
-            console.log(id);
-            $.ajax({
-                url:'/aqi/getPidData/'+id+'/'+type+'?tmp='+datestr,//请求数据的地址
-                type : "get",
-                async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
-                data : {},
-                dataType : "json",        //返回数据形式为json
-                success:function(result){
-                    pie(result['pie'])
-                    react(result['react'])
-                },
-                error:function(e){
-                }
-            });
-        });
 
         $.ajax({
             url:'/aqi/getAqiByCity/'+id +'/'+ type,//请求数据的地址
