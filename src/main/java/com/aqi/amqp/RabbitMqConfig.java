@@ -1,4 +1,7 @@
 package com.aqi.amqp;
+import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
@@ -137,6 +140,18 @@ public class RabbitMqConfig {
     @Bean
     public MessageConverter jsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
+    }
+
+    @Bean
+    public RedissonClient redissonClient() {
+                 Config config = new Config();
+                 config.useClusterServers()
+                         .setScanInterval(2000)
+                         .addNodeAddress("redis://39.105.231.100:6379");
+
+                 RedissonClient redisson = Redisson.create(config);
+
+                return redisson;
     }
 
 //    @Bean

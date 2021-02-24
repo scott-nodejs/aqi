@@ -50,6 +50,7 @@ public class keywordTask {
     @Autowired
     private NoResultService noResultService;
 
+    @Autowired
     private RedissonClient redissonClient;
 
     private CompletableFuture future = new CompletableFuture();
@@ -267,7 +268,6 @@ public class keywordTask {
             log.info("get redis lock failed: " + GlobalConstant.LOCK_UPDATETIME);
         }
     }
-
 
     public static long getHour(){
         return getHour(System.currentTimeMillis());
