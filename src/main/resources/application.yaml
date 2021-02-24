@@ -40,3 +40,6 @@ spring:
         max-concurrency: 5
         # 手动签收ACK
         acknowledge-mode: manual
+redisson:
+  address: redis://39.105.231.100:6379
+  password: app_talk@123
