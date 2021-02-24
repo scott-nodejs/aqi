@@ -11,6 +11,14 @@ public class GlobalConstant {
 
     public static final String aqiUrl = "https://api.waqi.info/feed/";
 
+    public static final String LOCK_KEYWORD = "lock_keyword";
+
+    public static final String LOCK_SCANCITY = "lock_scanCity";
+
+    public static final String LOCK_SCANAREA = "lock_scanArea";
+
+    public static final String LOCK_UPDATETIME = "lock_updatetime";
+
     public static final int a[][] = {{0,154,0,500},
                                      {155,404,510,1000},
                                      {405,654,1010,1500},

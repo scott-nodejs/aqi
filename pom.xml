@@ -72,6 +72,11 @@
             <artifactId>spring-boot-starter-amqp</artifactId>
             <version>2.3.1.RELEASE</version>
         </dependency>
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson</artifactId>
+            <version>3.12.5</version>
+        </dependency>
 <!--        &lt;!&ndash; https://mvnrepository.com/artifact/ru.yandex.clickhouse/clickhouse-jdbc &ndash;&gt;-->
 <!--        <dependency>-->
 <!--            <groupId>ru.yandex.clickhouse</groupId>-->
