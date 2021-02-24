@@ -147,7 +147,7 @@ public class RabbitMqConfig {
                  Config config = new Config();
                  config.useClusterServers()
                          .setScanInterval(2000)
-                         .addNodeAddress("redis://39.105.231.100:6379");
+                         .addNodeAddress("redis://39.105.231.100:6379").setPassword("app_talk@123");
 
                  RedissonClient redisson = Redisson.create(config);
 
