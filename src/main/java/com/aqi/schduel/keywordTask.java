@@ -57,11 +57,11 @@ public class keywordTask {
 
     @Scheduled(cron = "0 0/2 * * * ?")
     public void keyWord(){
-        RLock lock = redissonClient.getLock(GlobalConstant.LOCK_KEYWORD);
-        boolean isLock = lock.tryLock();
-        if(isLock){
-            log.info("get redis lock success: " + GlobalConstant.LOCK_KEYWORD);
-            try {
+//        RLock lock = redissonClient.getLock(GlobalConstant.LOCK_KEYWORD);
+//        boolean isLock = lock.tryLock();
+//        if(isLock){
+//            log.info("get redis lock success: " + GlobalConstant.LOCK_KEYWORD);
+//            try {
                 List<KeyWord> keyWords = keyWordService.selectList();
                 for(KeyWord kw : keyWords){
                     try{
@@ -123,24 +123,24 @@ public class keywordTask {
                         log.error("拉取失败 插入城市和区域失败：", e);
                     }
                 }
-            }catch (Exception e){
-                log.error("keyword error : ", e);
-            }finally {
-                lock.unlock();
-                log.info("release redis lock: " + GlobalConstant.LOCK_KEYWORD);
-            }
-        }else{
-            log.info("get redis lock failed: " + GlobalConstant.LOCK_KEYWORD);
-        }
+//            }catch (Exception e){
+//                log.error("keyword error : ", e);
+//            }finally {
+//                lock.unlock();
+//                log.info("release redis lock: " + GlobalConstant.LOCK_KEYWORD);
+//            }
+//        }else{
+//            log.info("get redis lock failed: " + GlobalConstant.LOCK_KEYWORD);
+//        }
     }
 
     @Scheduled(cron = "0 0/5 * * * ?")
     public void scanCity(){
-        RLock lock = redissonClient.getLock(GlobalConstant.LOCK_SCANCITY);
-        boolean isLock = lock.tryLock();
-        if(isLock){
-            log.info("get redis lock successful: " + GlobalConstant.LOCK_SCANCITY);
-            try {
+//        RLock lock = redissonClient.getLock(GlobalConstant.LOCK_SCANCITY);
+//        boolean isLock = lock.tryLock();
+//        if(isLock){
+//            log.info("get redis lock successful: " + GlobalConstant.LOCK_SCANCITY);
+//            try {
                 long current = System.currentTimeMillis() / 1000;
                 List<City> citys = cityService.getCity(current);
                 citys.forEach(city -> {
@@ -151,15 +151,15 @@ public class keywordTask {
                         log.error("拉取失败 城市更新aqi失败：", e);
                     }
                 });
-            }catch (Exception e){
-                log.error("scancity error : ", e);
-            }finally {
-                lock.unlock();
-                log.info("release redis lock: " + GlobalConstant.LOCK_SCANCITY);
-            }
-        }else {
-            log.info("get redis lock failed: " + GlobalConstant.LOCK_SCANCITY);
-        }
+//            }catch (Exception e){
+//                log.error("scancity error : ", e);
+//            }finally {
+//                lock.unlock();
+//                log.info("release redis lock: " + GlobalConstant.LOCK_SCANCITY);
+//            }
+//        }else {
+//            log.info("get redis lock failed: " + GlobalConstant.LOCK_SCANCITY);
+//        }
     }
 
     public UrlEntity sendCity(City city, long time){
@@ -179,11 +179,11 @@ public class keywordTask {
 
     @Scheduled(cron = "0 30,35,40,45,50,55 * * * ?")
     public void scanArea(){
-        RLock lock = redissonClient.getLock(GlobalConstant.LOCK_SCANAREA);
-        boolean isLock = lock.tryLock();
-        if(isLock){
-            log.info("get redis lock success: " + GlobalConstant.LOCK_SCANAREA);
-            try{
+//        RLock lock = redissonClient.getLock(GlobalConstant.LOCK_SCANAREA);
+//        boolean isLock = lock.tryLock();
+//        if(isLock){
+//            log.info("get redis lock success: " + GlobalConstant.LOCK_SCANAREA);
+//            try{
                 long current = System.currentTimeMillis() / 1000;
                 List<Area> areas = areaService.getArea(current);
                 areas.forEach(city -> {
@@ -194,15 +194,15 @@ public class keywordTask {
                         log.error("拉取失败 区域更新aqi失败：", e);
                     }
                 });
-            }catch (Exception e){
-                log.error("scan area error : ", e);
-            }finally {
-                lock.unlock();
-                log.info("release redis lock: " + GlobalConstant.LOCK_SCANAREA);
-            }
-        }else{
-            log.info("get redis lock failed: " + GlobalConstant.LOCK_SCANAREA);
-        }
+//            }catch (Exception e){
+//                log.error("scan area error : ", e);
+//            }finally {
+//                lock.unlock();
+//                log.info("release redis lock: " + GlobalConstant.LOCK_SCANAREA);
+//            }
+//        }else{
+//            log.info("get redis lock failed: " + GlobalConstant.LOCK_SCANAREA);
+//        }
     }
 
     public UrlEntity sendArea(Area city, long time){
@@ -223,11 +223,11 @@ public class keywordTask {
 
     @Scheduled(cron = "0 0 * * *  ?")
     public void updateTime(){
-        RLock lock = redissonClient.getLock(GlobalConstant.LOCK_UPDATETIME);
-        boolean isLock = lock.tryLock();
-        if(isLock){
-            log.info("get redis lock success: " + GlobalConstant.LOCK_UPDATETIME);
-            try{
+//        RLock lock = redissonClient.getLock(GlobalConstant.LOCK_UPDATETIME);
+//        boolean isLock = lock.tryLock();
+//        if(isLock){
+//            log.info("get redis lock success: " + GlobalConstant.LOCK_UPDATETIME);
+//            try{
                 log.info("重置时间");
                 List<NoResult> noResults = areaService.selectByNoResult();
                 long time = System.currentTimeMillis() - 30*60*1000;
@@ -258,15 +258,15 @@ public class keywordTask {
 
                 cityService.updateTime(getHour());
                 areaService.updateTime(getHour());
-            }catch (Exception e){
-                log.error("updatetime error: ", e);
-            }finally {
-                lock.unlock();
-                log.info("release redis lock: " + GlobalConstant.LOCK_UPDATETIME);
-            }
-        }else{
-            log.info("get redis lock failed: " + GlobalConstant.LOCK_UPDATETIME);
-        }
+//            }catch (Exception e){
+//                log.error("updatetime error: ", e);
+//            }finally {
+//                lock.unlock();
+//                log.info("release redis lock: " + GlobalConstant.LOCK_UPDATETIME);
+//            }
+//        }else{
+//            log.info("get redis lock failed: " + GlobalConstant.LOCK_UPDATETIME);
+//        }
     }
 
     public static long getHour(){
