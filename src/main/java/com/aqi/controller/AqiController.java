@@ -1,13 +1,14 @@
 package com.aqi.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.aqi.service.AqiService;
 import com.aqi.utils.ResultVoUtil;
 import com.aqi.utils.TimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 public class AqiController {
@@ -20,9 +21,21 @@ public class AqiController {
         return aqiService.selectAqiByCityId(id, type);
     }
 
+//    @PostMapping(value = "/compareCity/{type}")
+//    public Object compareCity(String ids, @PathVariable int type){
+//        String[] idarr = ids.split(",");
+//        return aqiService.compareCity(idarr, type);
+//    }
+
     @GetMapping(value = "/getAqiByCityName/{name}")
     public Object getAqiByCityName(@PathVariable String name){
         return ResultVoUtil.success("获取成功", aqiService.selectAqiByCityName(name));
+    }
+
+    @PostMapping(value = "/compareCitys/{type}")
+    public Object compareCitys(String names, @PathVariable int type){
+        List<String> parse = (List<String>) JSONObject.parse(names);
+        return aqiService.compareCityByName(parse, type);
     }
 
     @GetMapping(value = "/getPidData/{id}/{type}")

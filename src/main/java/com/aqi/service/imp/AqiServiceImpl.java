@@ -11,7 +11,6 @@ import com.aqi.utils.TimeUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.attoparser.trace.MarkupTraceEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -107,6 +106,15 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
         return aqiVos;
     }
 
+    @Override
+    public List<AqiVo> compareCity(List<Integer> ids, int type) {
+        List<AqiVo> aqiVos = new ArrayList<>();
+        ids.forEach(id->{
+            List<AqiVo> aqiVos1 = selectAqiByCityId(id, type);
+            aqiVos.addAll(aqiVos1);
+        });
+        return aqiVos.stream().map(aqiVo -> {aqiVo.setType("");return aqiVo;}).collect(Collectors.toList());
+    }
 
 
     @Override
@@ -116,6 +124,15 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
             throw new ResultException(400,"很抱歉,该城市暂时没有收录");
         }
         return cityByName.getUid();
+    }
+
+    @Override
+    public List<AqiVo> compareCityByName(List<String> names, int type) {
+        List<Integer> ids = new ArrayList<>();
+        names.forEach(name->{
+            ids.add(selectAqiByCityName(name));
+        });
+        return compareCity(ids, type);
     }
 
     @Override

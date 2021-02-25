@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"><link rel="icon" href="https://jscdn.com.cn/highcharts/images/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        .list-group-horizontal .list-group-item {
+            display: inline-block;
+        }
+        .list-group-horizontal .list-group-item {
+            margin-bottom: 0;
+            margin-left:-4px;
+            margin-right: 0;
+        }
+        .list-group-horizontal .list-group-item:first-child {
+            border-top-right-radius:0;
+            border-bottom-left-radius:4px;
+        }
+        .list-group-horizontal .list-group-item:last-child {
+            border-top-right-radius:4px;
+            border-bottom-left-radius:0;
+        }
+    </style>
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcss.com/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+    <link href="css/city-select.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdn.bootcss.com/moment.js/2.24.0/moment-with-locales.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-select/1.14.0-beta/css/bootstrap-select.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap-select/1.14.0-beta/js/bootstrap-select.min.js"></script>
+    <script src="http://code.highcharts.com.cn/highcharts/8.2.2/highcharts.js"></script>
+    <script src="http://code.highcharts.com.cn/highcharts/8.2.2/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/variwide.js"></script>
+    <script src="js/citydata.min.js"></script>
+    <script src="js/citySelect-1.0.4.js"></script>
+
+</head>
+<body>
+<div class="row" th:insert="~{public :: public_top(2)}"></div>
+<div>
+    <div>
+        <div class="col-md-5"></div>
+        <div class="col-md-3">
+           <div class="city-select" id="multi-select-2"></div>
+        </div>
+        <div class="col-md-4"></div>
+    </div>
+    <div class="row">
+        <div id="container" class="col-md-12"  style="min-width:400px;height:600px;"></div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        let arr_data = ['北京市','天津市'];
+        request(arr_data);
+        // 多选-自定义热门城市-搜索
+        var MulticitySelect2 = $('#multi-select-2').citySelect({
+            dataJson: cityData,
+            multiSelect: true,
+            search: true,
+            multiType: 1,
+            hotCity: ['北京市', '上海市', '广州市', '深圳市', '南京市', '杭州市', '天津市', '重庆市', '成都市', '青岛市', '苏州市', '无锡市', '郑州市', '厦门市', '武汉市', '长沙市', '石家庄市', '乌鲁木齐市', '三亚市', '昆明市'],
+            onInit: function () {
+                console.log(this)
+            },
+            onForbid: function () {
+                console.log(this)
+            },
+            onTabsAfter: function (target) {
+                console.log(event)
+            },
+            onCallerAfter: function (target, values) {
+                let arr = values['name'];
+                request(arr);
+            }
+        });
+    })
+
+    function request(arr_data) {
+        $.ajax({
+            url:'/aqi/compareCitys/2',//请求数据的地址
+            type : "post",
+            async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
+            data : {names: JSON.stringify(arr_data)},
+            dataType : "json",        //返回数据形式为json
+            success:function(result){
+                compare(result);
+            },
+            error:function(e){
+            }
+        });
+    }
+    
+    function compare(data) {
+        var chart = Highcharts.chart('container', {
+            chart: {
+                type: 'spline'
+            },
+            title: {
+                text: 'AQI城市对比图'
+            },
+            subtitle: {
+                text: ''
+            },
+            xAxis: {
+                type: 'datetime',
+                dateTimeLabelFormats: {
+                    millisecond: '%H:%M:%S.%L',
+                    second: '%H:%M:%S',
+                    minute: '%H:%M',
+                    hour: '%H:%M',
+                    day: '%m-%d',
+                    week: '%m-%d',
+                    month: '%Y-%m',
+                    year: '%Y'
+                }
+            },
+            yAxis: {
+                title: {
+                    text: '微米'
+                },
+                min: 0,
+                minorGridLineWidth: 0,
+                gridLineWidth: 0,
+                alternateGridColor: null,
+                plotBands: [{ // Light air
+                    from: 0,
+                    to: 50,
+                    color: 'rgba(0, 153, 102, 0.1)',
+                    label: {
+                        text: '空气质量优',
+                        style: {
+                            color: '#606060'
+                        }
+                    }
+                }, { // Light breeze
+                    from: 51,
+                    to: 100,
+                    color: 'rgba(255 ,222 ,51, 0.1)',
+                    label: {
+                        text: '空气质量良',
+                        style: {
+                            color: '#606060'
+                        }
+                    }
+                }, { // Gentle breeze
+                    from: 101,
+                    to: 150,
+                    color: 'rgba(255, 153, 51, 0.1)',
+                    label: {
+                        text: '轻度污染',
+                        style: {
+                            color: '#606060'
+                        }
+                    }
+                }, { // Moderate breeze
+                    from: 151,
+                    to: 200,
+                    color: 'rgba(204, 0, 51, 0.1)',
+                    label: {
+                        text: '中度污染',
+                        style: {
+                            color: '#606060'
+                        }
+                    }
+                }, { // Fresh breeze
+                    from: 201,
+                    to: 300,
+                    color: 'rgba(102, 0, 153, 0.1)',
+                    label: {
+                        text: '重度污染',
+                        style: {
+                            color: '#606060'
+                        }
+                    }
+                }, { // Strong breeze
+                    from: 300,
+                    to: 400,
+                    color: 'rgba(126, 0, 35, 0.1)',
+                    label: {
+                        text: '污染爆表',
+                        style: {
+                            color: '#606060'
+                        }
+                    }
+                }]
+            },
+
+            plotOptions: {
+                spline: {
+                    lineWidth: 2,
+                    states: {
+                        hover: {
+                            lineWidth: 3
+                        }
+                    },
+                    marker: {
+                        enabled: false
+                    },
+                    pointInterval: 3600000, // one hour
+                    pointStart: Date.UTC(2009, 9, 6, 0, 0, 0)
+                }
+            },
+            series: data,
+            navigation: {
+                menuItemStyle: {
+                    fontSize: '10px'
+                }
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

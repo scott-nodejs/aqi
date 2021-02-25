@@ -3,8 +3,6 @@ server:
   servlet:
     path: /aqi
 spring:
-  mvc:
-      static-path-pattern: /static/**
   #数据库连接配置
   datasource:
     username: root

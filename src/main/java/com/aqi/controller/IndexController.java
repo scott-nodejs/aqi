@@ -22,4 +22,9 @@ public class IndexController {
     public String area(Model model) {
         return "area";
     }
+
+    @RequestMapping("/compare")
+    public String compare(Model model) {
+        return "compare";
+    }
 }
