@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.Properties;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 @Service
@@ -51,6 +52,10 @@ public class AqiListener {
     @Autowired
     MessageConverter messageConverter;
 
+    CountDownLatch lock = new CountDownLatch(4);
+
+    ExecutorService es = Executors.newFixedThreadPool(4);
+
     @PostConstruct
     public void init() {
         new Thread(new Runnable() {
@@ -59,36 +64,73 @@ public class AqiListener {
                 while (true) {
                     try {
                         Thread.sleep(1000);
-                        processQueue(RabbitMqConfig.QUEUE_NAME, 10,
-                                null, new Consumer<UrlEntity>() {
-                                    @Override
-                                    public void accept(UrlEntity urlEntity) {
-                                        if(urlEntity.getType() == 1){
-                                            areaService.insertAqi(urlEntity);
-                                        }
-                                    }
-                                });
-                        processQueue(RabbitMqConfig.QUEUE_NAME_FAIL, 5,
-                                null, new Consumer<UrlEntity>() {
-                                    @Override
-                                    public void accept(UrlEntity urlEntity) {
-                                        if(urlEntity.getType() == 0){
-                                            cityService.insertAqi(urlEntity);
-                                        }
-                                    }
-                                });
-                        processQueue(RabbitMqConfig.QUEUE_HALF_HOUR, 5,
-                                null, new Consumer<UrlEntity>() {
-                                    @Override
-                                    public void accept(UrlEntity urlEntity) {
-                                        if(urlEntity.getType() == 0){
-                                            cityService.halfAqi(urlEntity);
-                                        }
-                                        else{
-                                            areaService.halfAqi(urlEntity);
-                                        }
-                                    }
-                                });
+                        es.execute(()->{
+                            try{
+                                processQueue(RabbitMqConfig.QUEUE_NAME, 1,
+                                        null, new Consumer<UrlEntity>() {
+                                            @Override
+                                            public void accept(UrlEntity urlEntity) {
+                                                if(urlEntity.getType() == 1){
+                                                    areaService.insertAqi(urlEntity);
+                                                }
+                                            }
+                                        });
+                            }finally {
+                                lock.countDown();
+                            }
+                        });
+
+
+                        es.execute(()->{
+                            try{
+                                processQueue(RabbitMqConfig.QUEUE_NAME_FAIL, 1,
+                                        null, new Consumer<UrlEntity>() {
+                                            @Override
+                                            public void accept(UrlEntity urlEntity) {
+                                                if(urlEntity.getType() == 0){
+                                                    cityService.insertAqi(urlEntity);
+                                                }
+                                            }
+                                        });
+                            }finally {
+                                lock.countDown();
+                            }
+                        });
+
+                        es.execute(()->{
+                            try{
+                                processQueue(RabbitMqConfig.QUEUE_HALF_HOUR, 1,
+                                        null, new Consumer<UrlEntity>() {
+                                            @Override
+                                            public void accept(UrlEntity urlEntity) {
+                                                if(urlEntity.getType() == 0){
+                                                    cityService.halfAqi(urlEntity);
+                                                }
+                                                else{
+                                                    areaService.halfAqi(urlEntity);
+                                                }
+                                            }
+                                        });
+                            }finally {
+                                lock.countDown();
+                            }
+                        });
+                        es.execute(()->{
+                            try{
+                                processQueue(RabbitMqConfig.QUEUE_RAND_AQI, 1,
+                                        null, new Consumer<UrlEntity>() {
+                                            @Override
+                                            public void accept(UrlEntity urlEntity) {
+                                                if(urlEntity.getType() == 2){
+                                                    areaService.consumerRand(urlEntity);
+                                                }
+                                            }
+                                        });
+                            }finally {
+                                lock.countDown();
+                            }
+                        });
+                        lock.await();
 //                        processQueue(RabbitMqConfig.QUEUE_CONSUMER_AQI, 50,
 //                                null, new Consumer<ConsumerAqi>() {
 //                                    @Override

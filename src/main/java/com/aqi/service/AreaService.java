@@ -27,4 +27,8 @@ public interface AreaService extends IService<Area> {
     void halfAqi(UrlEntity urlEntity);
 
     List<Area> getAreaListByPerantId(int parentId);
+
+    List<Area> getRandAreaList();
+
+    void consumerRand(UrlEntity urlEntity);
 }

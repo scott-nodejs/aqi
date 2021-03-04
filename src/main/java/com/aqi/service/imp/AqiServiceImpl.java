@@ -11,6 +11,7 @@ import com.aqi.utils.TimeUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,8 +29,18 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
     AreaService areaService;
 
     @Override
-    public void insertAqi(Aqi aqi) {
-        baseMapper.insert(aqi);
+    public void insertAqi(Aqi aqi,int type) {
+        QueryWrapper<Aqi> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("uuid", aqi.getUuid());
+        Aqi aqi1 = baseMapper.selectOne(queryWrapper);
+        if(aqi1 == null){
+            baseMapper.insert(aqi);
+        }else if(type == 0){
+            int id = aqi1.getId();
+            BeanUtils.copyProperties(aqi,aqi1);
+            aqi1.setId(id);
+            baseMapper.updateSelectById(aqi1);
+        }
     }
 
     @Override
@@ -62,7 +73,7 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
 
             aqi1.setVtime(tmp);
             aqi1.setFtime((String) aqi.getTime().get("s"));
-            this.insertAqi(aqi1);
+            this.insertAqi(aqi1, 0);
         }catch (Exception e){
             e.printStackTrace();
         }

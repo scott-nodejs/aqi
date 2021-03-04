@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface AqiService extends IService<Aqi> {
 
-    void insertAqi(Aqi aqi);
+    void insertAqi(Aqi aqi, int type);
 
     void updateAqi(AqiResult.Aqi aqi);
 

@@ -5,6 +5,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
 import java.util.Date;
 
 public class TimeUtil {
@@ -32,5 +33,22 @@ public class TimeUtil {
         }
         long time = datetime.getTime();
          return time/1000;
+    }
+
+    public static long getHour(){
+        return getHour(System.currentTimeMillis());
+    }
+
+    public static long getHour(long longtime){
+        Instant instant = Instant.ofEpochMilli(longtime);
+        ZoneId zone = ZoneId.systemDefault();
+        String time = LocalDateTime.ofInstant(instant, zone).format(DateTimeFormatter.ofPattern("yyyyMMddHH"));
+        String hour = time.substring(8);
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, Integer.valueOf(hour));
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTimeInMillis()/1000;
     }
 }

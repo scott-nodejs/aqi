@@ -7,6 +7,7 @@ import com.aqi.mapper.city.CityMapper;
 import com.aqi.service.AqiService;
 import com.aqi.service.CityService;
 import com.aqi.service.SendService;
+import com.aqi.utils.TimeUtil;
 import com.aqi.utils.http.HttpRequestConfig;
 import com.aqi.utils.http.HttpRequestResult;
 import com.aqi.utils.http.HttpUtils;
@@ -17,8 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-
-import static com.aqi.schduel.keywordTask.getHour;
 
 @Service
 @Slf4j
@@ -86,7 +85,7 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
                     int tmp = (Integer) data.getTime().get("v") - 8 * 60 * 60;
                     if (tmp >= urlEntity.getVtime()) {
                         aqiService.updateAqi(data);
-                        city.setVtime((int) (getHour() + 60 * 60));
+                        city.setVtime((int) (TimeUtil.getHour() + 60 * 60));
                         city.setIsUpdate(1);
                         baseMapper.updateById(city);
 //                        ConsumerAqi consumerAqi = new ConsumerAqi();

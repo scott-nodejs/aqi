@@ -1,5 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aqi.mapper.aqi.AqiMapper">
+    <update id="updateSelectById" parameterType="com.aqi.entity.Aqi">
+        UPDATE tb_aqi
+        SET
+        <if test="aqi != null">
+            aqi= #{aqi}
+        </if>
+        ,
+        <if test="url != null">
+            url= #{url}
+        </if> ,
+        <if test="dew != null">
+             dew= #{dew}
+        </if>,
+        <if test="co != null">
+            co= #{co}
+        </if> ,
+        <if test="h != null">
+            h= #{h}
+        </if> ,
+        <if test="no2 != null">
+            no2= #{no2}
+        </if> ,
+        <if test="o3 != null">
+            o3= #{o3}
+        </if>,
+        <if test="p != null">
+            p= #{p}
+        </if> ,
+        <if test="pm10 != null">
+            pm10= #{pm10}
+        </if>,
+        <if test="pm25 != null">
+            pm25= #{pm25}
+        </if>,
+        <if test=" so2 != null">
+            so2= #{so2}
+        </if> ,
+        <if test="t != null">
+            t= #{t}
+        </if>,
+        <if test=" w != null">
+            w= #{w}
+        </if> ,
+        <if test=" wg != null">
+            wg= #{wg}
+        </if> ,
+        <if test="vtime != null">
+            vtime= #{vtime}
+        </if>,
+        <if test=" ftime != null">
+            ftime= #{ftime}
+        </if> WHERE id= #{id}
+    </update>
 
 </mapper>

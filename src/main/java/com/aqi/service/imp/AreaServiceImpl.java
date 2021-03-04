@@ -4,9 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.aqi.amqp.RabbitMqConfig;
 import com.aqi.entity.*;
 import com.aqi.mapper.city.AreaMapper;
-import com.aqi.service.AqiService;
-import com.aqi.service.AreaService;
-import com.aqi.service.SendService;
+import com.aqi.service.*;
+import com.aqi.utils.TimeUtil;
 import com.aqi.utils.http.HttpRequestConfig;
 import com.aqi.utils.http.HttpRequestResult;
 import com.aqi.utils.http.HttpUtils;
@@ -20,8 +19,6 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.aqi.schduel.keywordTask.getHour;
-
 @Service
 @Slf4j
 public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements AreaService {
@@ -31,6 +28,12 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
 
     @Autowired
     private SendService sendService;
+    
+    @Autowired
+    private CityService cityService;
+
+    @Autowired
+    private NoCityAreaService noCityAreaService;
 
     @Override
     public void insertArea(Area area) {
@@ -79,7 +82,7 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
                     int tmp = (Integer) data.getTime().get("v") - 8 * 60 * 60;
                     if (tmp >= urlEntity.getVtime()) {
                         aqiService.updateAqi(data);
-                        city.setVtime((int) (getHour() + 60 * 60));
+                        city.setVtime((int) (TimeUtil.getHour() + 60 * 60));
                         city.setIsUpdate(1);
                         this.updateById(city);
 //                        ConsumerAqi consumerAqi = new ConsumerAqi();
@@ -146,6 +149,81 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
         QueryWrapper<Area> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("perant_id", parentId);
         return baseMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public List<Area> getRandAreaList() {
+        QueryWrapper<Area> Nullquery = new QueryWrapper<>();
+        List<Area> areas = baseMapper.selectList(Nullquery);
+        Map<Integer, List<Area>> areaMap = areas.stream().collect(Collectors.groupingBy(Area::getPerantId));
+        List<Area> randList = new ArrayList<>();
+        areaMap.values().forEach(as->{
+            Random random=new Random();
+            int i = random.nextInt(as.size());
+            randList.add(as.get(i));
+        });
+        return randList;
+    }
+
+    @Override
+    public void consumerRand(UrlEntity urlEntity) {
+        try {
+            long start = System.currentTimeMillis() / 1000;
+            HttpRequestConfig config = HttpRequestConfig.create().url(urlEntity.getUrl());
+            HttpRequestResult result = HttpUtils.get(config);
+            if (result == null) {
+                log.info("拉取失败: ");
+            }
+            RandResult res = JSON.parseObject(result.getResponseText(), RandResult.class);
+            List<RandResult.OnlyPm> data = res.getD();
+            data.forEach(onlyPm -> {
+                Aqi aqi = new Aqi();
+                aqi.setUid(Integer.parseInt(onlyPm.getX()));
+                String uuid = onlyPm.getT()+"_"+onlyPm.getX();
+                aqi.setUuid(uuid);
+                aqi.setPm25(onlyPm.getV());
+                aqi.setAqi(Integer.parseInt(onlyPm.getV()));
+                aqiService.insertAqi(aqi, 1);
+                
+                if(onlyPm.getU().contains("/")){
+                    QueryWrapper<Area> queryWrapper = new QueryWrapper<>();
+                    queryWrapper.eq("uid", onlyPm.getX());
+                    Area area = baseMapper.selectOne(queryWrapper);
+                    if(area == null){
+                        NoCityArea noCityArea = new NoCityArea();
+                        noCityArea.setAddr(onlyPm.getU());
+                        noCityArea.setEn(onlyPm.getNlo());
+                        noCityArea.setZh(onlyPm.getNna());
+                        noCityArea.setD(onlyPm.getD());
+                        noCityArea.setLat(onlyPm.getGeo().get(0));
+                        noCityArea.setLon(onlyPm.getGeo().get(1));
+                        noCityArea.setUid(Integer.parseInt(onlyPm.getX()));
+                        noCityArea.setType(1);
+                        noCityAreaService.save(noCityArea);
+                    }
+                }else{
+                    QueryWrapper<City> queryWrapper = new QueryWrapper<>();
+                    queryWrapper.eq("uid", onlyPm.getX());
+                    City city = cityService.getOne(queryWrapper);
+                    if(city == null){
+                        NoCityArea noCityArea = new NoCityArea();
+                        noCityArea.setAddr(onlyPm.getU());
+                        noCityArea.setEn(onlyPm.getNlo());
+                        noCityArea.setZh(onlyPm.getNna());
+                        noCityArea.setD(onlyPm.getD());
+                        noCityArea.setLat(onlyPm.getGeo().get(0));
+                        noCityArea.setLon(onlyPm.getGeo().get(1));
+                        noCityArea.setUid(Integer.parseInt(onlyPm.getX()));
+                        noCityArea.setType(0);
+                        noCityAreaService.save(noCityArea);
+                    }
+                }
+            });
+            long end = System.currentTimeMillis() / 1000;
+            log.info("补充爬取: " + (end - start));
+        }catch (Exception e){
+            log.error("补充爬取: {}",e);
+        }
     }
 
     @Data

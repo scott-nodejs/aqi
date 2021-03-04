@@ -6,5 +6,5 @@ spring:
   application:
     name: aqi
   profiles:
-    active: prod
+    active: dev
 

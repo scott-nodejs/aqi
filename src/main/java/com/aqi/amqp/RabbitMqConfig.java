@@ -29,10 +29,12 @@ public class RabbitMqConfig {
     public static final String ROUTINGKEY = "spring.boot.routingKey";
     public static final String ROUTINGKEY_HALF_HOUR = "half.hour.routingKey";
     public static final String ROUTINGKEY_CONSUMER_AQI = "routingKey_consumer_aqi";
+    public static final String ROUTINGKEY_RAND_AQI = "routingKey_rand_aqi";
     public static final String QUEUE_NAME = "spring.demo";
     public static final String QUEUE_NAME_FAIL = "spring.demo.failure";
     public static final String QUEUE_HALF_HOUR = "aqi.city.or.area.half.hour";
     public static final String QUEUE_CONSUMER_AQI = "queue_consumer_aqi";
+    public static final String QUEUE_RAND_AQI = "queue_rand_aqi";
 
     //RabbitMQ的配置信息
     @Value("${spring.rabbitmq.host}")
@@ -98,12 +100,17 @@ public class RabbitMqConfig {
     @Bean
     public Queue queueFail() {
         return new Queue(QUEUE_NAME_FAIL, true); //队列持久
-
     }
 
     @Bean
     public Queue queueConsumer() {
         return new Queue(QUEUE_CONSUMER_AQI, true); //队列持久
+
+    }
+
+    @Bean
+    public Queue queueRand() {
+        return new Queue(QUEUE_RAND_AQI, true); //队列持久
 
     }
 
@@ -137,6 +144,11 @@ public class RabbitMqConfig {
     @Bean
     public Binding bindingConsumerAqi(Queue queue, DirectExchange exchange) {
         return BindingBuilder.bind(queueConsumer()).to(exchange()).with(RabbitMqConfig.ROUTINGKEY_CONSUMER_AQI);
+    }
+
+    @Bean
+    public Binding bindingRandAqi(Queue queue, DirectExchange exchange) {
+        return BindingBuilder.bind(queueRand()).to(exchange()).with(RabbitMqConfig.ROUTINGKEY_RAND_AQI);
     }
 
 
