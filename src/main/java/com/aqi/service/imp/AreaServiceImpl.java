@@ -183,6 +183,9 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
                 aqi.setUuid(uuid);
                 aqi.setPm25(onlyPm.getV());
                 aqi.setAqi(Integer.parseInt(onlyPm.getV()));
+                aqi.setVtime(onlyPm.getT());
+                long t = Long.valueOf(onlyPm.getT()+"000");
+                aqi.setFtime(TimeUtil.convertMillisToString(t));
                 aqiService.insertAqi(aqi, 1);
                 
                 if(onlyPm.getU().contains("/")){

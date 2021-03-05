@@ -63,7 +63,7 @@ public class AqiListener {
             public void run() {
                 while (true) {
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(3000);
                         es.execute(()->{
                             try{
                                 processQueue(RabbitMqConfig.QUEUE_NAME, 1,

@@ -13,7 +13,7 @@ public class RandResult {
     public class OnlyPm{
         private String nlo;
         private String nna;
-        private long t;
+        private int t;
         private String pol;
         private String x;
         private String v;
