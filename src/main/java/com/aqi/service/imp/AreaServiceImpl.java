@@ -202,7 +202,10 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
                         noCityArea.setLon(onlyPm.getGeo().get(1));
                         noCityArea.setUid(Integer.parseInt(onlyPm.getX()));
                         noCityArea.setType(1);
-                        noCityAreaService.save(noCityArea);
+                        NoCityArea byId = noCityAreaService.getById(Integer.parseInt(onlyPm.getX()));
+                        if(byId == null){
+                            noCityAreaService.save(noCityArea);
+                        }
                     }
                 }else{
                     QueryWrapper<City> queryWrapper = new QueryWrapper<>();
@@ -218,14 +221,17 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
                         noCityArea.setLon(onlyPm.getGeo().get(1));
                         noCityArea.setUid(Integer.parseInt(onlyPm.getX()));
                         noCityArea.setType(0);
-                        noCityAreaService.save(noCityArea);
+                        NoCityArea byId = noCityAreaService.getById(Integer.parseInt(onlyPm.getX()));
+                        if(byId == null){
+                            noCityAreaService.save(noCityArea);
+                        }
                     }
                 }
             });
             long end = System.currentTimeMillis() / 1000;
             log.info("补充爬取: " + (end - start));
         }catch (Exception e){
-            log.error("补充爬取: {}",e);
+            log.error("补充爬取: 可能出现了", e);
         }
     }
 
