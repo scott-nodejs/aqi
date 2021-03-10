@@ -3,9 +3,11 @@ package com.aqi.listen;
 import com.aqi.amqp.RabbitMqConfig;
 import com.aqi.entity.ConsumerAqi;
 import com.aqi.entity.UrlEntity;
+import com.aqi.entity.Waqi;
 import com.aqi.service.AqiService;
 import com.aqi.service.AreaService;
 import com.aqi.service.CityService;
+import com.aqi.service.WaqiService;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.GetResponse;
@@ -52,9 +54,12 @@ public class AqiListener {
     @Autowired
     MessageConverter messageConverter;
 
-    CountDownLatch lock = new CountDownLatch(4);
+    @Autowired
+    WaqiService waqiService;
 
-    ExecutorService es = Executors.newFixedThreadPool(4);
+    CountDownLatch lock = new CountDownLatch(3);
+
+    ExecutorService es = Executors.newFixedThreadPool(3);
 
     @PostConstruct
     public void init() {
@@ -115,21 +120,6 @@ public class AqiListener {
                                 lock.countDown();
                             }
                         });
-                        es.execute(()->{
-                            try{
-                                processQueue(RabbitMqConfig.QUEUE_RAND_AQI, 1,
-                                        null, new Consumer<UrlEntity>() {
-                                            @Override
-                                            public void accept(UrlEntity urlEntity) {
-                                                if(urlEntity.getType() == 2){
-                                                    areaService.consumerRand(urlEntity);
-                                                }
-                                            }
-                                        });
-                            }finally {
-                                lock.countDown();
-                            }
-                        });
                         lock.await();
 //                        processQueue(RabbitMqConfig.QUEUE_CONSUMER_AQI, 50,
 //                                null, new Consumer<ConsumerAqi>() {
@@ -149,6 +139,27 @@ public class AqiListener {
                     }
                 }
 
+            }
+        }).start();
+
+        new Thread(()->{
+            while (true){
+                try{
+                    Thread.sleep(1000);
+                    es.execute(()->{
+                        processQueue(RabbitMqConfig.QUEUE_RAND_AQI, 1,
+                                null, new Consumer<UrlEntity>() {
+                                    @Override
+                                    public void accept(UrlEntity urlEntity) {
+                                        if(urlEntity.getType() == 2){
+                                            waqiService.consumerRand(urlEntity);
+                                        }
+                                    }
+                                });
+                    });
+                }catch (Exception e){
+                    logger.error("消费失败1: " , e);
+                }
             }
         }).start();
     }

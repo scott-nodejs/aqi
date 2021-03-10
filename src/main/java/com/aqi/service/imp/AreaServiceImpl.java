@@ -165,75 +165,7 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
         return randList;
     }
 
-    @Override
-    public void consumerRand(UrlEntity urlEntity) {
-        try {
-            long start = System.currentTimeMillis() / 1000;
-            HttpRequestConfig config = HttpRequestConfig.create().url(urlEntity.getUrl());
-            HttpRequestResult result = HttpUtils.get(config);
-            if (result == null) {
-                log.info("拉取失败: ");
-            }
-            RandResult res = JSON.parseObject(result.getResponseText(), RandResult.class);
-            List<RandResult.OnlyPm> data = res.getD();
-            data.forEach(onlyPm -> {
-                Aqi aqi = new Aqi();
-                aqi.setUid(Integer.parseInt(onlyPm.getX()));
-                String uuid = onlyPm.getT()+"_"+onlyPm.getX();
-                aqi.setUuid(uuid);
-                aqi.setPm25(onlyPm.getV());
-                aqi.setAqi(Integer.parseInt(onlyPm.getV()));
-                aqi.setVtime(onlyPm.getT());
-                long t = Long.valueOf(onlyPm.getT()+"000");
-                aqi.setFtime(TimeUtil.convertMillisToString(t));
-                aqiService.insertAqi(aqi, 1);
-                
-                if(onlyPm.getU().contains("/")){
-                    QueryWrapper<Area> queryWrapper = new QueryWrapper<>();
-                    queryWrapper.eq("uid", onlyPm.getX());
-                    Area area = baseMapper.selectOne(queryWrapper);
-                    if(area == null){
-                        NoCityArea noCityArea = new NoCityArea();
-                        noCityArea.setAddr(onlyPm.getU());
-                        noCityArea.setEn(onlyPm.getNlo());
-                        noCityArea.setZh(onlyPm.getNna());
-                        noCityArea.setD(onlyPm.getD());
-                        noCityArea.setLat(onlyPm.getGeo().get(0));
-                        noCityArea.setLon(onlyPm.getGeo().get(1));
-                        noCityArea.setUid(Integer.parseInt(onlyPm.getX()));
-                        noCityArea.setType(1);
-                        NoCityArea byId = noCityAreaService.getById(Integer.parseInt(onlyPm.getX()));
-                        if(byId == null){
-                            noCityAreaService.save(noCityArea);
-                        }
-                    }
-                }else{
-                    QueryWrapper<City> queryWrapper = new QueryWrapper<>();
-                    queryWrapper.eq("uid", onlyPm.getX());
-                    City city = cityService.getOne(queryWrapper);
-                    if(city == null){
-                        NoCityArea noCityArea = new NoCityArea();
-                        noCityArea.setAddr(onlyPm.getU());
-                        noCityArea.setEn(onlyPm.getNlo());
-                        noCityArea.setZh(onlyPm.getNna());
-                        noCityArea.setD(onlyPm.getD());
-                        noCityArea.setLat(onlyPm.getGeo().get(0));
-                        noCityArea.setLon(onlyPm.getGeo().get(1));
-                        noCityArea.setUid(Integer.parseInt(onlyPm.getX()));
-                        noCityArea.setType(0);
-                        NoCityArea byId = noCityAreaService.getById(Integer.parseInt(onlyPm.getX()));
-                        if(byId == null){
-                            noCityAreaService.save(noCityArea);
-                        }
-                    }
-                }
-            });
-            long end = System.currentTimeMillis() / 1000;
-            log.info("补充爬取: " + (end - start));
-        }catch (Exception e){
-            log.error("补充爬取: 可能出现了", e);
-        }
-    }
+
 
     @Data
     class Count{

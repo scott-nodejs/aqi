@@ -10,4 +10,6 @@ public interface CronService {
     void cronscanArea();
 
     void cronupdateTime();
+
+    void cronSycnWaqi();
 }

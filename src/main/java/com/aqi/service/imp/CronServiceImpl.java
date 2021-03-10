@@ -9,13 +9,16 @@ import com.aqi.utils.TimeUtil;
 import com.aqi.utils.http.HttpRequestConfig;
 import com.aqi.utils.http.HttpRequestResult;
 import com.aqi.utils.http.HttpUtils;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -41,6 +44,9 @@ public class CronServiceImpl implements CronService {
 
     @Autowired
     private RedissonClient redissonClient;
+
+    @Autowired
+    private WaqiService waqiService;
 
     @Override
     public void onlyPm25() {
@@ -245,6 +251,23 @@ public class CronServiceImpl implements CronService {
 //        }else{
 //            log.info("get redis lock failed: " + GlobalConstant.LOCK_UPDATETIME);
 //        }
+    }
+
+    @Override
+    public void cronSycnWaqi() {
+        long hour = TimeUtil.getHour(System.currentTimeMillis() - 60 * 60 * 1000);
+        QueryWrapper<Waqi> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("vtime", hour);
+        List<Waqi> list = waqiService.list(queryWrapper);
+        list.forEach(waqi -> {
+            Aqi aqi = new Aqi();
+            BeanUtils.copyProperties(waqi, aqi);
+            aqi.setPm25(String.valueOf(waqi.getAqi()));
+            aqi.setFtime(TimeUtil.convertMillisToString(Long.valueOf(aqi.getVtime()+"000")));
+            aqiService.insertAqi(aqi);
+        });
+        List<String> ids = list.stream().map(waqi -> waqi.getUuid()).collect(Collectors.toList());
+        waqiService.removeByIds(ids);
     }
 
     public UrlEntity sendCity(City city, long time){
