@@ -34,7 +34,6 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
     WaqiService waqiService;
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void insertAqi(Aqi aqi) {
         QueryWrapper<Waqi> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("uuid", aqi.getUuid());
@@ -92,7 +91,12 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
         List<Aqi> aqis = baseMapper.selectList(queryWrapper);
         List<List<Long>> aqiList = aqis.stream().map(aqi -> {
             List<Long> node = new ArrayList<>();
-            int time = aqi.getVtime() + 8 * 60 * 60;
+            String[] split = aqi.getUuid().split("_");
+//            int time = aqi.getVtime() + 8 * 60 * 60;
+            int time = 0;
+            if(split.length == 2){
+                time = Integer.parseInt(split[0]) + 8 * 60 * 60;
+            }
             String t = time + "000";
             node.add(Long.parseLong(t));
             if(aqi.getAqi() == 0){
@@ -154,7 +158,11 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
         List<String> x = areas.stream().map(area -> {
             int start = area.getName().indexOf("(");
             int end = area.getName().indexOf(")");
-            return area.getName().substring(start+1,end);
+            if(start != -1 && end != -1){
+                return area.getName().substring(start+1,end);
+            }else{
+                return area.getName();
+            }
         }).collect(Collectors.toList());
         List<List<Integer>> totalAqi = new ArrayList<>();
         List<Integer> hours = gen24Hours(vtime);
@@ -166,10 +174,18 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
             queryWrapper.between("vtime", start, end);
             queryWrapper.orderByAsc("vtime");
             List<Aqi> aqis = baseMapper.selectList(queryWrapper);
+            QueryWrapper<Waqi> waqiQuery = new QueryWrapper<>();
+            waqiQuery.eq("uid", area.getUid());
+            waqiQuery.between("vtime", start, end);
+            waqiQuery.orderByAsc("vtime");
+            List<Waqi> waqiList = waqiService.list(waqiQuery);
             List<Integer> collect = hours.stream().map(hour -> {
                 return 0;
             }).collect(Collectors.toList());
-            if(aqis != null && aqis.size() > 0){
+            if(area.getUid() == 466){
+                System.out.println();
+            }
+            if((aqis != null && aqis.size() > 0) || (waqiList != null && waqiList.size() > 0)){
                 for(int i = 0; i < collect.size() ; i++){
                     for(int j = 0; j < aqis.size(); j++){
                         if(hours.get(i) == aqis.get(j).getVtime()){
@@ -192,10 +208,28 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
                             break;
                         }
                     }
+                    if(collect.get(i) == 0){
+                        for(int j = 0; j < waqiList.size(); j++){
+                            if(hours.get(i) == waqiList.get(j).getVtime()){
+                                Waqi aqi = waqiList.get(j);
+                                int v;
+                                if (type == 1) {
+                                    v = getChina(aqi.getAqi());
+                                } else {
+                                        v = aqi.getAqi();
+                                }
+                                collect.set(i, v);
+                                break;
+                            }
+                        }
+                    }
                 }
             }
             totalAqi.add(collect);
         });
+
+        //将全部是0的区域给过滤掉
+        filter(x,totalAqi);
 
         List<AreaAqiVo> areaAqiVos = new ArrayList<>();
         for(int i = 0; i < hours.size(); i++){
@@ -210,16 +244,16 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
                 map.put("color", color);
                 data.add(map);
             }
-            Collections.sort(data, new Comparator<Map<String, Object>>() {
-                @Override
-                public int compare(Map<String, Object> map1, Map<String, Object> map2) {
-                    if((int)map1.get("y") > (int)map2.get("y")){
-                        return -1;
-                    }else{
-                        return 1;
-                    }
-                }
-            });
+//            Collections.sort(data, new Comparator<Map<String, Object>>() {
+//                @Override
+//                public int compare(Map<String, Object> map1, Map<String, Object> map2) {
+//                    if((int)map1.get("y") > (int)map2.get("y")){
+//                        return -1;
+//                    }else{
+//                        return 1;
+//                    }
+//                }
+//            });
             areaAqiVo.setData(data);
             areaAqiVos.add(areaAqiVo);
         }
@@ -228,6 +262,24 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
         areaAqiResponseVo.setAqis(areaAqiVos);
         areaAqiResponseVo.setX(x);
         return areaAqiResponseVo;
+    }
+
+    private void filter(List<String> x, List<List<Integer>> totalAqi) {
+        List<Integer> f = totalAqi.stream().map(arr ->
+             arr.stream().reduce((i, j) -> i + j).get() == 0 ? 0 : 1
+        ).collect(Collectors.toList());
+        List<String> x1 = new ArrayList<>();
+        List<List<Integer>> totalAqi1 = new ArrayList<>();
+        for(int i = 0; i < x.size(); i++){
+            if(f.get(i) == 1){
+                x1.add(x.get(i));
+                totalAqi1.add(totalAqi.get(i));
+            }
+        }
+        x.clear();
+        totalAqi.clear();
+        x.addAll(x1);
+        totalAqi.addAll(totalAqi1);
     }
 
     @Override
