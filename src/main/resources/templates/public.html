@@ -1,23 +1,32 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+<title>折线图</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <body>
 <nav class="navbar navbar-inverse" role="navigation" th:fragment="public_top(index)">
     <div class="container-fluid">
         <div class="navbar-header">
-            <a class="navbar-brand" href="#">雾霾时时报</a>
+            <div style="padding-left: 5px">
+               <a class="navbar-brand" href="#">雾霾时时报</a>
+            </div>
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navBar">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
         </div>
-        <div>
+        <div class="collapse navbar-collapse is-collapse"  id="navBar">
             <ul class="nav navbar-nav">
                 <li th:class="${index==0?'active':''}"><a href="/aqi/index">首页</a></li>
                 <li th:class="${index==1?'active':''}"><a href="/aqi/area">区域</a></li>
                 <li th:class="${index==2?'active':''}"><a href="/aqi/compare">对比</a></li>
             </ul>
-        </div>
-        <div class="nav navbar-nav navbar-right" style="padding-top:10px;padding-right: 30px; height: 15px">
-            <select class="selectpicker" style="height: 15px">
-                <option value="1">中国标椎</option>
-                <option value="2">美国标准</option>
-            </select>
+            <div style="padding-top: 7px">
+                <select class="selectpicker" data-width="100px" >
+                    <option value="1">中国标椎</option>
+                    <option value="2">美国标准</option>
+                </select>
+            </div>
         </div>
     </div>
 </nav>

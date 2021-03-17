@@ -88,6 +88,10 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
         String name = city.getCity().substring(start+1,end);
         QueryWrapper<Aqi> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("uid",cityId);
+        //只获取近三十天的数据
+        long endtime = TimeUtil.getHour();
+        long starttime = endtime - 30*24*60*60;
+        queryWrapper.between("vtime", starttime, endtime);
         List<Aqi> aqis = baseMapper.selectList(queryWrapper);
         List<List<Long>> aqiList = aqis.stream().map(aqi -> {
             List<Long> node = new ArrayList<>();
