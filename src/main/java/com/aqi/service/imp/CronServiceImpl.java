@@ -10,6 +10,7 @@ import com.aqi.utils.http.HttpRequestConfig;
 import com.aqi.utils.http.HttpRequestResult;
 import com.aqi.utils.http.HttpUtils;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
@@ -255,19 +256,30 @@ public class CronServiceImpl implements CronService {
 
     @Override
     public void cronSycnWaqi() {
-        long hour = TimeUtil.getHour(System.currentTimeMillis() - 60 * 60 * 1000);
+        this.cronSycnWaqi(System.currentTimeMillis());
+    }
+
+    @Override
+    public void cronSycnWaqi(long vtime) {
+        long hour = TimeUtil.getHour(vtime - 60 * 60 * 1000);
         QueryWrapper<Waqi> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("vtime", hour);
         List<Waqi> list = waqiService.list(queryWrapper);
         list.forEach(waqi -> {
-            Aqi aqi = new Aqi();
-            BeanUtils.copyProperties(waqi, aqi);
-            aqi.setPm25(String.valueOf(waqi.getAqi()));
-            aqi.setFtime(TimeUtil.convertMillisToString(Long.valueOf(aqi.getVtime()+"000")));
-            aqiService.insertAqi(aqi);
+            try{
+                Aqi aqi = new Aqi();
+                BeanUtils.copyProperties(waqi, aqi);
+                aqi.setPm25(String.valueOf(waqi.getAqi()));
+                aqi.setFtime(TimeUtil.convertMillisToString(Long.valueOf(aqi.getVtime()+"000")));
+                aqiService.insertAqi(aqi);
+            }catch (Exception e){
+                log.error(waqi.getUuid() + "_主鍵已存在");
+            }
         });
         List<String> ids = list.stream().map(waqi -> waqi.getUuid()).collect(Collectors.toList());
-        waqiService.removeByIds(ids);
+        if(ids.size() > 0){
+            waqiService.removeByIds(ids);
+        }
     }
 
     public UrlEntity sendCity(City city, long time){

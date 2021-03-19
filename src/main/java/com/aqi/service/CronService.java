@@ -12,4 +12,6 @@ public interface CronService {
     void cronupdateTime();
 
     void cronSycnWaqi();
+
+    void cronSycnWaqi(long vtime);
 }

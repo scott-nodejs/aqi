@@ -2,6 +2,7 @@ package com.aqi.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.aqi.service.AqiService;
+import com.aqi.service.CronService;
 import com.aqi.utils.ResultVoUtil;
 import com.aqi.utils.TimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,9 @@ public class AqiController {
 
     @Autowired
     private AqiService aqiService;
+
+    @Autowired
+    private CronService cronService;
 
     @GetMapping(value = "/getAqiByCity/{id}/{type}")
     public Object getAqiByCityId(@PathVariable int id, @PathVariable int type){
@@ -48,5 +52,11 @@ public class AqiController {
     public Object getAreaAqiByCityId(@PathVariable int id, @PathVariable int type, String tmp){
         int l = (int) (TimeUtil.convertStringToMillis(tmp+ " 00:00:00") / 1000);
         return aqiService.selectAreaAqiByCityId(id, type, l);
+    }
+
+    @GetMapping(value = "/waqi/sycn")
+    public Object sycn(@RequestParam(required = false) long vtime){
+        cronService.cronSycnWaqi(vtime);
+        return 0;
     }
 }
