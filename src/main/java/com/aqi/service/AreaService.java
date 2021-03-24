@@ -29,4 +29,6 @@ public interface AreaService extends IService<Area> {
     List<Area> getAreaListByPerantId(int parentId);
 
     List<Area> getRandAreaList();
+
+    void addArea(List<Integer> uids, Integer pId);
 }

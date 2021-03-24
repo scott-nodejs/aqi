@@ -37,3 +37,6 @@ spring:
 redisson:
   address: redis://172.17.162.83:6379
   password: app_talk@123
+
+ip:
+  path: /data/my.datx

@@ -19,6 +19,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,6 +52,11 @@ public class CronServiceImpl implements CronService {
 
     @Autowired
     private WaqiService waqiService;
+
+    @Autowired
+    private ComputerService computerService;
+
+    ExecutorService es = Executors.newFixedThreadPool(10);
 
     @Override
     public void onlyPm25() {
@@ -280,6 +289,40 @@ public class CronServiceImpl implements CronService {
         if(ids.size() > 0){
             waqiService.removeByIds(ids);
         }
+    }
+
+    @Override
+    public void cronMouthAqi() {
+        String tmp = TimeUtil.convertMillisToMouth(System.currentTimeMillis());
+        this.cronMouthAqi(tmp);
+    }
+
+    @Override
+    public void cronMouthAqi(String tmp) {
+        long start = System.currentTimeMillis();
+        List<City> list = cityService.list();
+        List<Future<Boolean>> futures = new ArrayList<>();
+        for(City city : list){
+            futures.add(es.submit(() -> {
+                return computerService.cronComputer(city.getUid(), 2, tmp);
+            }));
+        }
+        futures.forEach(f->{
+            try{
+                Boolean b = f.get();
+                if(!b){
+                    log.error("月综合处理时 出现异常");
+                }
+            }catch (Exception e){
+
+            }
+        });
+        log.info("月份处理时消耗的时间: "+ (System.currentTimeMillis() - start) / 1000);
+    }
+
+    @Override
+    public void cronMouthAqi(int cityId, String tmp) {
+        computerService.cronComputer(cityId, 2, tmp);
     }
 
     public UrlEntity sendCity(City city, long time){

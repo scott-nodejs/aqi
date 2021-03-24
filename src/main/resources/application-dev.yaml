@@ -37,3 +37,6 @@ spring:
 redisson:
   address: redis://39.105.231.100:6379
   password: app_talk@123
+
+ip:
+  path: D:\iciba\aqi\src\main\resources\my.datx

@@ -27,4 +27,6 @@ public interface CityService extends IService<City> {
     void halfAqi(UrlEntity urlEntity);
 
     List<City> selectCityByIsUpdate();
+
+    void addCity(List<Integer> uids);
 }

@@ -14,4 +14,10 @@ public interface CronService {
     void cronSycnWaqi();
 
     void cronSycnWaqi(long vtime);
+
+    void cronMouthAqi();
+
+    void cronMouthAqi(String tmp);
+
+    void cronMouthAqi(int cityId, String tmp);
 }

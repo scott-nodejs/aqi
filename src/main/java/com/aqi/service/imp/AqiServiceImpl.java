@@ -4,10 +4,7 @@ import com.aqi.configer.exception.ResultException;
 import com.aqi.entity.*;
 import com.aqi.global.GlobalConstant;
 import com.aqi.mapper.aqi.AqiMapper;
-import com.aqi.service.AqiService;
-import com.aqi.service.AreaService;
-import com.aqi.service.CityService;
-import com.aqi.service.WaqiService;
+import com.aqi.service.*;
 import com.aqi.utils.TimeUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -18,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,6 +30,9 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
 
     @Autowired
     WaqiService waqiService;
+
+    @Autowired
+    ComputerService computerService;
 
     @Override
     public void insertAqi(Aqi aqi) {
@@ -92,15 +93,16 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
         long endtime = TimeUtil.getHour();
         long starttime = endtime - 30*24*60*60;
         queryWrapper.between("vtime", starttime, endtime);
+        queryWrapper.orderByAsc("vtime");
         List<Aqi> aqis = baseMapper.selectList(queryWrapper);
         List<List<Long>> aqiList = aqis.stream().map(aqi -> {
             List<Long> node = new ArrayList<>();
-            String[] split = aqi.getUuid().split("_");
-//            int time = aqi.getVtime() + 8 * 60 * 60;
-            int time = 0;
-            if(split.length == 2){
-                time = Integer.parseInt(split[0]) + 8 * 60 * 60;
-            }
+//            String[] split = aqi.getUuid().split("_");
+            int time = aqi.getVtime() + 8 * 60 * 60;
+//            int time = 0;
+//            if(split.length == 2){
+//                time = Integer.parseInt(split[0]) + 8 * 60 * 60;
+//            }
             String t = time + "000";
             node.add(Long.parseLong(t));
             if(aqi.getAqi() == 0){
@@ -128,13 +130,20 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
     }
 
     @Override
-    public List<AqiVo> compareCity(List<Integer> ids, int type) {
+    public CompareVo compareCity(List<Integer> ids, int type) {
         List<AqiVo> aqiVos = new ArrayList<>();
         ids.forEach(id->{
             List<AqiVo> aqiVos1 = selectAqiByCityId(id, type);
             aqiVos.addAll(aqiVos1);
         });
-        return aqiVos.stream().map(aqiVo -> {aqiVo.setType("");return aqiVo;}).collect(Collectors.toList());
+        List<AqiVo> aqivos = aqiVos.stream().map(aqiVo -> {
+            aqiVo.setType("");
+            return aqiVo;
+        }).collect(Collectors.toList());
+        CompareVo compareVo = new CompareVo();
+        compareVo.setAqiVos(aqivos);
+        compareVo.setComputers(computerService.computeBatchByList(aqivos,type));
+        return compareVo;
     }
 
 
@@ -148,7 +157,7 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
     }
 
     @Override
-    public List<AqiVo> compareCityByName(List<String> names, int type) {
+    public CompareVo compareCityByName(List<String> names, int type) {
         List<Integer> ids = new ArrayList<>();
         names.forEach(name->{
             ids.add(selectAqiByCityName(name));
@@ -170,14 +179,19 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
         }).collect(Collectors.toList());
         List<List<Integer>> totalAqi = new ArrayList<>();
         List<Integer> hours = gen24Hours(vtime);
+
+        List<Integer> uids = areas.stream().map(area -> area.getUid()).collect(Collectors.toList());
+
+        int start = vtime;
+        int end = vtime + 24*60*60;
+        QueryWrapper<Aqi> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("uid", uids);
+        queryWrapper.between("vtime", start, end);
+        queryWrapper.orderByAsc("vtime");
+        List<Aqi> aqilist = baseMapper.selectList(queryWrapper);
+        Map<Integer, List<Aqi>> aqiMap = aqilist.stream().collect(Collectors.groupingBy(Aqi::getUid));
         areas.forEach(area -> {
-            int start = vtime;
-            int end = vtime + 24*60*60;
-            QueryWrapper<Aqi> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("uid", area.getUid());
-            queryWrapper.between("vtime", start, end);
-            queryWrapper.orderByAsc("vtime");
-            List<Aqi> aqis = baseMapper.selectList(queryWrapper);
+            List<Aqi> aqis = aqiMap.getOrDefault(area.getUid(), null);
             QueryWrapper<Waqi> waqiQuery = new QueryWrapper<>();
             waqiQuery.eq("uid", area.getUid());
             waqiQuery.between("vtime", start, end);
@@ -186,9 +200,6 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
             List<Integer> collect = hours.stream().map(hour -> {
                 return 0;
             }).collect(Collectors.toList());
-            if(area.getUid() == 466){
-                System.out.println();
-            }
             if((aqis != null && aqis.size() > 0) || (waqiList != null && waqiList.size() > 0)){
                 for(int i = 0; i < collect.size() ; i++){
                     for(int j = 0; j < aqis.size(); j++){
@@ -248,16 +259,6 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
                 map.put("color", color);
                 data.add(map);
             }
-//            Collections.sort(data, new Comparator<Map<String, Object>>() {
-//                @Override
-//                public int compare(Map<String, Object> map1, Map<String, Object> map2) {
-//                    if((int)map1.get("y") > (int)map2.get("y")){
-//                        return -1;
-//                    }else{
-//                        return 1;
-//                    }
-//                }
-//            });
             areaAqiVo.setData(data);
             areaAqiVos.add(areaAqiVo);
         }
@@ -395,6 +396,68 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
         hourVo.setPie(pieNode);
         hourVo.setReact(reactNode);
         return hourVo;
+    }
+
+    @Override
+    public Object selectAreaByMouth(int cityId, int type, String tmp) {
+        QueryWrapper<Computer> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("p_id", cityId);
+        queryWrapper.eq("mouth_time", tmp);
+        List<Computer> computers = computerService.list(queryWrapper);
+        if(computers == null || computers.size() == 0){
+            throw new ResultException(500, "不存在相应的数据");
+        }
+        List<String> x = computers.stream().map(computer -> computer.getName()).collect(Collectors.toList());
+        List<Float> avgs = computers.stream().map(computer -> computer.getAvg()).collect(Collectors.toList());
+        List<Integer> goods = computers.stream().map(computer -> computer.getGoodcount()).collect(Collectors.toList());
+        List<Integer> justsosos = computers.stream().map(computer -> computer.getJustsosocount()).collect(Collectors.toList());
+        List<Integer> lights = computers.stream().map(computer -> computer.getLightcount()).collect(Collectors.toList());
+        List<Integer> zs = computers.stream().map(computer -> computer.getZcount()).collect(Collectors.toList());
+        List<Integer> bads = computers.stream().map(computer -> computer.getBadcount()).collect(Collectors.toList());
+        List<Integer> badests = computers.stream().map(computer -> computer.getBadestcount()).collect(Collectors.toList());
+        List<Map<String,Object>> total = new ArrayList<>();
+        Map<String,Object> avgmap = new HashMap<>();
+        avgmap.put("name","月平均值");
+        avgmap.put("data",avgs);
+        Map<String,Object> goodmap = new HashMap<>();
+        goodmap.put("name","月优的小时总数");
+        goodmap.put("data",goods);
+        Map<String,Object> justmap = new HashMap<>();
+        justmap.put("name","月良的小时总数");
+        justmap.put("data",justsosos);
+        Map<String,Object> lightmap = new HashMap<>();
+        lightmap.put("name","月轻度污染的小时总数");
+        lightmap.put("data",lights);
+        Map<String,Object> zmap = new HashMap<>();
+        zmap.put("name","月中度污染的小时总数");
+        zmap.put("data",zs);
+        Map<String,Object> badmap = new HashMap<>();
+        badmap.put("name","月重度污染的小时总数");
+        badmap.put("data",bads);
+        Map<String,Object> badestmap = new HashMap<>();
+        badestmap.put("name","月爆表的小时总数");
+        badestmap.put("data",badests);
+        total.add(avgmap);
+        total.add(goodmap);
+        total.add(justmap);
+        total.add(lightmap);
+        total.add(zmap);
+        total.add(badmap);
+        total.add(badestmap);
+        MouthVo mouthVo = new MouthVo();
+        mouthVo.setData(total);
+        mouthVo.setX(x);
+        return mouthVo;
+    }
+
+    @Override
+    public int getFitAqi(int aqi, int type) {
+        if(type == 1){
+            return this.getChina(aqi);
+        }
+        else{
+            return aqi;
+        }
     }
 
     public List<Integer> gen24Hours(int vtime){

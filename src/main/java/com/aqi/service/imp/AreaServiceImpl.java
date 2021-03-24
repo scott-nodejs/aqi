@@ -2,6 +2,7 @@ package com.aqi.service.imp;
 
 import com.alibaba.fastjson.JSON;
 import com.aqi.amqp.RabbitMqConfig;
+import com.aqi.configer.exception.ResultException;
 import com.aqi.entity.*;
 import com.aqi.mapper.city.AreaMapper;
 import com.aqi.service.*;
@@ -15,6 +16,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -165,6 +167,27 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
         return randList;
     }
 
+    @Override
+    public void addArea(List<Integer> uids, Integer pId) {
+        if(pId == null){
+            throw new ResultException(500, "Pid不能为空");
+        }
+        QueryWrapper<NoCityArea> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("uid", uids);
+        List<NoCityArea> areas = noCityAreaService.list(queryWrapper);
+        areas.forEach(area->{
+            Area area1 = new Area();
+            area1.setUid(area.getUid());
+            area1.setPerantId(pId);
+            area1.setLat(area.getLat());
+            area1.setLon(area.getLon());
+            area1.setName(area.getZh());
+            area1.setVtime((int) TimeUtil.getHour());
+            area1.setIsUpdate(0);
+            baseMapper.insert(area1);
+        });
+        noCityAreaService.removeByIds(uids);
+    }
 
 
     @Data

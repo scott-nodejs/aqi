@@ -6,6 +6,7 @@ import com.aqi.entity.*;
 import com.aqi.mapper.city.CityMapper;
 import com.aqi.service.AqiService;
 import com.aqi.service.CityService;
+import com.aqi.service.NoCityAreaService;
 import com.aqi.service.SendService;
 import com.aqi.utils.TimeUtil;
 import com.aqi.utils.http.HttpRequestConfig;
@@ -28,6 +29,9 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
 
     @Autowired
     private SendService sendService;
+
+    @Autowired
+    NoCityAreaService noCityAreaService;
 
     @Override
     public void insertCity(City city) {
@@ -136,5 +140,23 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
     @Override
     public List<City> selectCityByIsUpdate() {
         return baseMapper.selectCityByIsUpdate();
+    }
+
+    @Override
+    public void addCity(List<Integer> uids) {
+        QueryWrapper<NoCityArea> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("uid", uids);
+        List<NoCityArea> areas = noCityAreaService.list(queryWrapper);
+        areas.forEach(area->{
+            City area1 = new City();
+            area1.setUid(area.getUid());
+            area1.setLat(area.getLat());
+            area1.setLon(area.getLon());
+            area1.setCity(area.getZh());
+            area1.setVtime((int) TimeUtil.getHour());
+            area1.setIsUpdate(0);
+            baseMapper.insert(area1);
+        });
+        noCityAreaService.removeByIds(uids);
     }
 }

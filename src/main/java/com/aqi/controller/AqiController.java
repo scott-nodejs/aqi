@@ -48,15 +48,33 @@ public class AqiController {
         return aqiService.selectPieChartByDay(l,id, type);
     }
 
+
     @GetMapping(value = "/getAreaAqiByCity/{id}/{type}")
     public Object getAreaAqiByCityId(@PathVariable int id, @PathVariable int type, String tmp){
         int l = (int) (TimeUtil.convertStringToMillis(tmp+ " 00:00:00") / 1000);
         return aqiService.selectAreaAqiByCityId(id, type, l);
     }
 
+    @GetMapping(value = "/getMouthAreaAqiByCity/{id}/{type}")
+    public Object getMouthAreaAqiByCity(@PathVariable int id, @PathVariable int type, String tmp){
+        return aqiService.selectAreaByMouth(id, type, tmp);
+    }
+
     @GetMapping(value = "/waqi/sycn")
     public Object sycn(@RequestParam(required = false) long vtime){
         cronService.cronSycnWaqi(vtime);
+        return 0;
+    }
+
+    @GetMapping(value = "/mouth/computer")
+    public Object computer(@RequestParam(required = false) String tmp){
+        cronService.cronMouthAqi(tmp);
+        return 0;
+    }
+
+    @GetMapping(value = "/mouthBycity/computer/{id}")
+    public Object mouthBycity(@PathVariable int id, @RequestParam(required = false) String tmp){
+        cronService.cronMouthAqi(id,tmp);
         return 0;
     }
 }
