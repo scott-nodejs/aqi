@@ -39,4 +39,4 @@ redisson:
   password: app_talk@123
 
 ip:
-  path: D:\iciba\aqi\src\main\resources\my.datx
+  path: D:\ip.datx
