@@ -31,7 +31,7 @@
     <script src="https://cdn.bootcss.com/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
     <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-select/1.14.0-beta/css/bootstrap-select.min.css" rel="stylesheet">
     <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap-select/1.14.0-beta/js/bootstrap-select.min.js"></script>
-    <script src="http://https://cdn.bootcdn.net/ajax/libs/highcharts/9.0.1/highcharts.js"></script>
+    <script src="http://cdn.bootcdn.net/ajax/libs/highcharts/9.0.1/highcharts.js"></script>
 <!--    <script src="http://code.highcharts.com.cn/highcharts/8.2.2/modules/exporting.js"></script>-->
     <script src="https://code.highcharts.com/modules/variwide.js"></script>
     <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap-table/1.18.2/bootstrap-table.min.js"></script>
@@ -40,7 +40,7 @@
     <script src="js/citySelect-1.0.4.js"></script>
 
 </head>
-<body>
+<body style="overflow-x:hidden">
 <div class="row" th:insert="~{public :: public_top(2)}"></div>
 <div>
     <div>
@@ -105,7 +105,7 @@
         $('#table').bootstrapTable({
             ajax : function (request) {
                 $.ajax({
-                    url: "/aqi/compareCitys/2",
+                    url: "/compareCitys/2",
                     type: "POST",
                     dataType: "json",
                     data : {names: JSON.stringify(arr_data)},
@@ -198,8 +198,8 @@
                 }
             },
             yAxis: {
-                title: {
-                    text: '微米'
+                title:{
+                    enabled: false
                 },
                 min: 0,
                 minorGridLineWidth: 0,

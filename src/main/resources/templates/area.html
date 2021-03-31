@@ -33,9 +33,8 @@
 <!--    <script src="http://code.highcharts.com.cn/highcharts/8.2.2/modules/exporting.js"></script>-->
     <script src="https://img.hcharts.cn/highcharts-plugins/highcharts-zh_CN.js"></script>
     <script src="https://code.highcharts.com/modules/variwide.js"></script>
-
 </head>
-<body>
+<body style="overflow-x:hidden">
 <div class="row" th:insert="~{public :: public_top(1)}"></div>
 <div>
     <div th:insert="~{public :: public_city}"></div>
@@ -159,7 +158,7 @@
                     let id = $(this).attr('id');
                     console.log(id);
                     $.ajax({
-                        url:'/aqi/getAreaAqiByCity/'+id+'/'+ selected+'?tmp='+datestr,//请求数据的地址
+                        url:'/getAreaAqiByCity/'+id+'/'+ selected+'?tmp='+datestr,//请求数据的地址
                         type : "get",
                         async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
                         data : {},
@@ -190,7 +189,7 @@
                     let id = $(this).attr('id');
                     console.log(id);
                     $.ajax({
-                        url:'/aqi/getMouthAreaAqiByCity/'+id+'/'+ selected+'?tmp='+datestr,//请求数据的地址
+                        url:'/getMouthAreaAqiByCity/'+id+'/'+ selected+'?tmp='+datestr,//请求数据的地址
                         type : "get",
                         async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
                         data : {},
@@ -234,7 +233,7 @@
         }
         let now = new Date().format("yyyy-MM-dd");
         $.ajax({
-            url:'/aqi/getAreaAqiByCity/'+id+'/'+type+'?tmp='+now,//请求数据的地址
+            url:'/getAreaAqiByCity/'+id+'/'+type+'?tmp='+now,//请求数据的地址
             type : "get",
             async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
             data : {},
@@ -272,7 +271,7 @@
         }
         let now = new Date().format("yyyy-MM");
         $.ajax({
-            url:'/aqi/getMouthAreaAqiByCity/'+id+'/'+type+'?tmp='+now,//请求数据的地址
+            url:'/getMouthAreaAqiByCity/'+id+'/'+type+'?tmp='+now,//请求数据的地址
             type : "get",
             async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
             data : {},

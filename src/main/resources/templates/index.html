@@ -36,7 +36,7 @@
     <script src="https://img.hcharts.cn/highcharts-plugins/highcharts-zh_CN.js"></script>
 
 </head>
-<body>
+<body style="overflow-x:hidden">
         <div class="row" th:insert="~{public :: public_top(0)}"></div>
         <div>
         <div th:insert="~{public :: public_city}"></div>
@@ -131,7 +131,7 @@
                     let id = $(this).attr('id');
                     console.log(id);
                     $.ajax({
-                        url:'/aqi/getPidData/'+id+'/'+selected+'?tmp='+datestr,//请求数据的地址
+                        url:'/getPidData/'+id+'/'+selected+'?tmp='+datestr,//请求数据的地址
                         type : "get",
                         async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
                         data : {},
@@ -152,7 +152,7 @@
         let selected = $('.selectpicker option:selected').val();
        let city = $('#keyword').val();
         $.ajax({
-            url:'/aqi/getAqiByCityName/'+city,//请求数据的地址
+            url:'/getAqiByCityName/'+city,//请求数据的地址
             type : "get",
             async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
             data : {},
@@ -197,7 +197,7 @@
         let now = new Date().format("yyyy-MM-dd");
 
         $.ajax({
-            url:'/aqi/getPidData/'+id+'/'+type+'?tmp='+now,//请求数据的地址
+            url:'/getPidData/'+id+'/'+type+'?tmp='+now,//请求数据的地址
             type : "get",
             async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
             data : {},
@@ -212,7 +212,7 @@
 
 
         $.ajax({
-            url:'/aqi/getAqiByCity/'+id +'/'+ type,//请求数据的地址
+            url:'/getAqiByCity/'+id +'/'+ type,//请求数据的地址
             type : "get",
             async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
             data : {},
@@ -323,6 +323,9 @@
             yAxis: {
                 min: 0,
                 minorGridLineWidth: 0,
+                title:{
+                    enabled: false
+                },
                 gridLineWidth: 0,
                 alternateGridColor: null,
                 plotBands: [{ // Light air

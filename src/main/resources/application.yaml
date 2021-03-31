@@ -1,12 +1,12 @@
 server:
   port: 9090
   servlet:
-    path: /aqi
+    path: /
 spring:
   application:
     name: aqi
   profiles:
-    active: prod
+    active: dev
 
 
 
