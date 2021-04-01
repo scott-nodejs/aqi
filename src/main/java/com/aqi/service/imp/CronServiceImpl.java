@@ -325,6 +325,11 @@ public class CronServiceImpl implements CronService {
         computerService.cronComputer(cityId, 2, tmp);
     }
 
+    @Override
+    public void crongenRank() {
+        cityService.getRank();
+    }
+
     public UrlEntity sendCity(City city, long time){
         StringBuilder url = new StringBuilder();
         url.append(GlobalConstant.aqiUrl);

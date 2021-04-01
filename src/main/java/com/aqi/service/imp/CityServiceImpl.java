@@ -1,13 +1,13 @@
 package com.aqi.service.imp;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.aqi.amqp.RabbitMqConfig;
 import com.aqi.entity.*;
+import com.aqi.global.GlobalConstant;
 import com.aqi.mapper.city.CityMapper;
-import com.aqi.service.AqiService;
-import com.aqi.service.CityService;
-import com.aqi.service.NoCityAreaService;
-import com.aqi.service.SendService;
+import com.aqi.service.*;
 import com.aqi.utils.TimeUtil;
 import com.aqi.utils.http.HttpRequestConfig;
 import com.aqi.utils.http.HttpRequestResult;
@@ -15,10 +15,18 @@ import com.aqi.utils.http.HttpUtils;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.codehaus.groovy.util.HashCodeHelper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.cache.CacheProperties;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import javax.annotation.PreDestroy;
+import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -32,6 +40,15 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
 
     @Autowired
     NoCityAreaService noCityAreaService;
+
+    @Autowired
+    ComputerService computerService;
+
+    @Autowired
+    RedisService redisService;
+
+    ExecutorService es = Executors.newFixedThreadPool(5);
+
 
     @Override
     public void insertCity(City city) {
@@ -137,6 +154,11 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
         }
     }
 
+    @PreDestroy
+    public void destory(){
+        es.shutdown();
+    }
+
     @Override
     public List<City> selectCityByIsUpdate() {
         return baseMapper.selectCityByIsUpdate();
@@ -158,5 +180,70 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
             baseMapper.insert(area1);
         });
         noCityAreaService.removeByIds(uids);
+    }
+
+    @Override
+    public void getRank() {
+        List<String> uids;
+        Object cityAlluids = redisService.getString(GlobalConstant.CITY_UIDS);
+        if(cityAlluids == null){
+            uids = baseMapper.selectList(new QueryWrapper<>()).stream().map(c -> c.getUid()+"").collect(Collectors.toList());
+            String uidsStr = JSONObject.toJSONString(uids);
+            redisService.setString(GlobalConstant.CITY_UIDS, uidsStr);
+        }else{
+            uids = JSON.parseArray((String) cityAlluids, String.class);
+        }
+        uids.forEach(uid->{
+            es.execute(()->{
+                QueryWrapper<Aqi> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("uid", Integer.parseInt(uid));
+                List<Aqi> aqis = aqiService.list(queryWrapper);
+                int score = computerService.computeByRank(aqis, 2);
+                redisService.zadd(uid, score*1.0);
+            });
+        });
+    }
+
+    public Map<String, Object> rank(int rank, int type){
+        List<String> x = new ArrayList<>();
+        List<String> uids = new ArrayList<>();
+        List<Map<String,Object>> y = new ArrayList<>();
+        Set<ZSetOperations.TypedTuple<Object>> typedTuples = redisService.zgetByScore(rank,type);;
+        Iterator<ZSetOperations.TypedTuple<Object>> iterator = typedTuples.iterator();
+        while (iterator.hasNext()){
+            ZSetOperations.TypedTuple<Object> next = iterator.next();
+            String uid = (String) next.getValue();
+            uids.add(uid);
+            double score = next.getScore();
+            Map<String, Object> map = new HashMap<>();
+            if(type == 0){
+                map.put("color", "#009966");
+            }else{
+                map.put("color", "#7E0023");
+            }
+            map.put("y", Math.abs((int) score));
+            y.add(map);
+        }
+        QueryWrapper<City> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("uid", uids);
+        List<City> citys = baseMapper.selectList(queryWrapper);
+        citys.forEach(city -> {
+            int start = city.getCity().indexOf("(");
+            int end = city.getCity().indexOf(")");
+            String name = city.getCity();
+            if(start != -1 && end != -1){
+                name = city.getCity().substring(start+1,end);
+            }
+            x.add(name);
+        });
+        List obj = new ArrayList();
+        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> v = new HashMap<>();
+        v.put("name","排行系数");
+        v.put("data", y);
+        obj.add(v);
+        map.put("x", x);
+        map.put("y", obj);
+        return map;
     }
 }

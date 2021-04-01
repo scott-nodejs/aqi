@@ -33,4 +33,20 @@ public class GlobalConstant {
                                     {1500,2500,2010,3000},
                                     {2500,3500,3010,4000},
                                     {3500,5000,4010,5000}};
+
+    public static final int GOOD_PARA = 10;
+
+    public static final int JUSTSOSO_PARA = 5;
+
+    public static final int LIGHT_PARA = 1;
+
+    public static final int Z_PARA = -3;
+
+    public static final int BAD_PARA = -5;
+
+    public static final int BADEST_PARA = -10;
+
+    public static final String RANK = "CITY:AQI:RANK";
+
+    public static final String CITY_UIDS = "CITY:UIDS";
 }

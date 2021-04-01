@@ -20,4 +20,6 @@ public interface CronService {
     void cronMouthAqi(String tmp);
 
     void cronMouthAqi(int cityId, String tmp);
+
+    void crongenRank();
 }

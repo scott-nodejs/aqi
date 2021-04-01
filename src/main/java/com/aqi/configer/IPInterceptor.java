@@ -41,7 +41,7 @@ public class IPInterceptor implements HandlerInterceptor {
         String str = sb.toString();
         String reg = "[^\u4e00-\u9fa5]";
         str = str.replaceAll(reg, "");
-        log.info("USER IP ADDRESS IS =>\nip地址："+ipAddress+",\n来源: "+str+"=>"+requestURI+"=>"+para);
+        log.info("USER IP ADDRESS IS =>ip地址："+ipAddress+",来源: "+str+"=>"+requestURI+"=>"+para);
         return true;
     }
 

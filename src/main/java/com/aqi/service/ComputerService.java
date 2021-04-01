@@ -22,4 +22,5 @@ public interface ComputerService extends IService<Computer> {
 
     boolean cronComputer(int cityId, int type, String tmp);
 
+    int computeByRank(List<Aqi> aqis, int type);
 }

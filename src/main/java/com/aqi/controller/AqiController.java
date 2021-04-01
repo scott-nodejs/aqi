@@ -2,6 +2,7 @@ package com.aqi.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.aqi.service.AqiService;
+import com.aqi.service.CityService;
 import com.aqi.service.CronService;
 import com.aqi.utils.ResultVoUtil;
 import com.aqi.utils.TimeUtil;
@@ -19,6 +20,9 @@ public class AqiController {
 
     @Autowired
     private CronService cronService;
+
+    @Autowired
+    private CityService cityService;
 
     @GetMapping(value = "/getAqiByCity/{id}/{type}")
     public Object getAqiByCityId(@PathVariable int id, @PathVariable int type){
@@ -75,6 +79,17 @@ public class AqiController {
     @GetMapping(value = "/mouthBycity/computer/{id}")
     public Object mouthBycity(@PathVariable int id, @RequestParam(required = false) String tmp){
         cronService.cronMouthAqi(id,tmp);
+        return 0;
+    }
+
+    @GetMapping(value = "/aqi/rank")
+    public Object rank(@RequestParam(required = false, defaultValue = "10") int rank, @RequestParam int type){
+        return cityService.rank(rank, type);
+    }
+
+    @GetMapping(value = "/genrank")
+    public Object genrank(){
+        cityService.getRank();
         return 0;
     }
 }

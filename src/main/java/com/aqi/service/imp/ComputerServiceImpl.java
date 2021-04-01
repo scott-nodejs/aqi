@@ -5,6 +5,7 @@ import com.aqi.entity.Aqi;
 import com.aqi.entity.AqiVo;
 import com.aqi.entity.Area;
 import com.aqi.entity.Computer;
+import com.aqi.global.GlobalConstant;
 import com.aqi.mapper.city.ComputerMapper;
 import com.aqi.service.AqiService;
 import com.aqi.service.AreaService;
@@ -190,6 +191,18 @@ public class ComputerServiceImpl extends ServiceImpl<ComputerMapper, Computer> i
             log.error("月份异常: ", e);
             return false;
         }
+    }
+
+    @Override
+    public int computeByRank(List<Aqi> aqis, int type) {
+        Computer computer = this.computeByAqis(aqis, type);
+        int good = computer.getGoodcount() * GlobalConstant.GOOD_PARA;
+        int justsoso = computer.getJustsosocount() * GlobalConstant.JUSTSOSO_PARA;
+        int light = computer.getLightcount() * GlobalConstant.LIGHT_PARA;
+        int z = computer.getZcount() * GlobalConstant.Z_PARA;
+        int bad = computer.getBadestcount() * GlobalConstant.BAD_PARA;
+        int badest = computer.getBadestcount() * GlobalConstant.BADEST_PARA;
+        return (good + justsoso + light + z + bad + badest);
     }
 
     public int getMouthEndTime(String tmp){

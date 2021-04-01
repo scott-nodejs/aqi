@@ -27,4 +27,9 @@ public class IndexController {
     public String compare(Model model) {
         return "compare";
     }
+
+    @RequestMapping("/rank")
+    public String rank(Model model) {
+        return "rank";
+    }
 }

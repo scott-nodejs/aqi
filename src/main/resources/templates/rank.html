@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"><link rel="icon" href="https://jscdn.com.cn/highcharts/images/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        .list-group-horizontal .list-group-item {
+            display: inline-block;
+        }
+        .list-group-horizontal .list-group-item {
+            margin-bottom: 0;
+            margin-left:-4px;
+            margin-right: 0;
+        }
+        .list-group-horizontal .list-group-item:first-child {
+            border-top-right-radius:0;
+            border-bottom-left-radius:4px;
+        }
+        .list-group-horizontal .list-group-item:last-child {
+            border-top-right-radius:4px;
+            border-bottom-left-radius:0;
+        }
+    </style>
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcss.com/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdn.bootcss.com/moment.js/2.24.0/moment-with-locales.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-select/1.14.0-beta/css/bootstrap-select.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap-select/1.14.0-beta/js/bootstrap-select.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/highcharts/9.0.1/highcharts.js"></script>
+<!--    <script src="http://code.highcharts.com.cn/highcharts/8.2.2/modules/exporting.js"></script>-->
+    <script src="https://img.hcharts.cn/highcharts-plugins/highcharts-zh_CN.js"></script>
+    <script src="https://code.highcharts.com/modules/variwide.js"></script>
+</head>
+<body style="overflow-x:hidden">
+<div class="row" th:insert="~{public :: public_top(3)}"></div>
+<div>
+    <div class="col-md-12">
+        <ul id="myTab" class="nav nav-tabs">
+            <li class="active">
+                <a href="#day" data-toggle="tab">
+                    最优前十排行榜
+                </a>
+            </li>
+            <li><a href="#mouth" data-toggle="tab">
+                   最差前十排行榜
+            </a></li>
+        </ul>
+        <div id="myTabContent" class="tab-content">
+            <div class="tab-pane fade in active" id="day">
+                <div style="padding-top: 20px">
+                    <div id="container" style="height:650px"></div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="mouth">
+                <div style="padding-top: 20px">
+                    <div id="container1" style="height:650px"></div>
+
+                </div>
+            </div>
+        </div>
+        <div style="font-size: 12px; text-align: center">排行系数计算公式: 优小时数 x 10 + 良小时数 x 5 + 轻度的小时数 x 1 + 中度小时数 x -3 + 重度小时数 x -5 + 爆表小时数 x -10(三十天内), 负数取绝对值</div>
+    </div>
+
+</div>
+</body>
+<script>
+    $(function () {
+        $(".selectpicker").selectpicker('val','2');//默认选中 value=“selectrateid” 的option
+        $(".selectpicker").selectpicker('refresh');
+        $.ajax({
+            url:'/aqi/rank?type=0',//请求数据的地址
+            type : "get",
+            async : true,
+            data : {},
+            dataType : "json",//返回数据形式为json
+            success:function(result){
+                areaReact(result['x'], result['y']);
+            },
+            error:function(e){
+            }
+        });
+        $.ajax({
+            url:'/aqi/rank?type=1',//请求数据的地址
+            type : "get",
+            async : true,
+            data : {},
+            dataType : "json",//返回数据形式为json
+            success:function(result){
+                areaReact1(result['x'], result['y']);
+            },
+            error:function(e){
+            }
+        });
+    })
+
+    function areaReact(x, v) {
+        var chart = Highcharts.chart('container', {
+            chart: {
+                type: 'bar'
+            },
+            title: {
+                text: '城市AQI排行榜'
+            },
+            xAxis: {
+                categories: x
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: ''
+                }
+            },
+            legend: {
+                /* 图例显示顺序反转
+                 * 这是因为堆叠的顺序默认是反转的，可以设置
+                 * yAxis.reversedStacks = false 来达到类似的效果
+                 */
+                reversed: true
+            },
+            plotOptions: {
+                series: {
+                    stacking: 'normal'
+                }
+            },
+            series: v
+        });
+    }
+
+    function areaReact1(x, v) {
+        var chart = Highcharts.chart('container1', {
+            chart: {
+                type: 'bar'
+            },
+            title: {
+                text: '城市AQI排行榜'
+            },
+            xAxis: {
+                categories: x
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: ''
+                }
+            },
+            legend: {
+                /* 图例显示顺序反转
+                 * 这是因为堆叠的顺序默认是反转的，可以设置
+                 * yAxis.reversedStacks = false 来达到类似的效果
+                 */
+                reversed: true
+            },
+            plotOptions: {
+                series: {
+                    stacking: 'normal'
+                }
+            },
+            series: v
+        });
+    }
+</script>
+</html>

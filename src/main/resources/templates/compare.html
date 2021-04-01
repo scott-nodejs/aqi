@@ -64,6 +64,8 @@
     $(function () {
         let arr_data = ['北京市','天津市'];
         request(arr_data);
+        $(".selectpicker").selectpicker('val','2');//默认选中 value=“selectrateid” 的option
+        $(".selectpicker").selectpicker('refresh');
         // 多选-自定义热门城市-搜索
         var MulticitySelect2 = $('#multi-select-2').citySelect({
             dataJson: cityData,

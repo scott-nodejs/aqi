@@ -7,6 +7,7 @@ import com.aqi.entity.UrlEntity;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
+import java.util.Map;
 
 public interface CityService extends IService<City> {
 
@@ -29,4 +30,8 @@ public interface CityService extends IService<City> {
     List<City> selectCityByIsUpdate();
 
     void addCity(List<Integer> uids);
+
+    void getRank();
+
+    Map<String, Object> rank(int rank, int type);
 }
