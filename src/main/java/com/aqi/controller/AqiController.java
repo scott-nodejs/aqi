@@ -1,6 +1,7 @@
 package com.aqi.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.aqi.entity.City;
 import com.aqi.service.AqiService;
 import com.aqi.service.CityService;
 import com.aqi.service.CronService;
@@ -52,6 +53,12 @@ public class AqiController {
         return aqiService.selectPieChartByDay(l,id, type);
     }
 
+    @GetMapping(value = "/getPidDataBySearch/{type}")
+    public Object getPidData(@PathVariable int type, String tmp,String city){
+        int l = (int) (TimeUtil.convertStringToMillis(tmp+ " 00:00:00") / 1000);
+        City cityByName = cityService.getCityByName(city);
+        return aqiService.selectPieChartByDay(l,cityByName.getUid(), type);
+    }
 
     @GetMapping(value = "/getAreaAqiByCity/{id}/{type}")
     public Object getAreaAqiByCityId(@PathVariable int id, @PathVariable int type, String tmp){
@@ -83,7 +90,7 @@ public class AqiController {
     }
 
     @GetMapping(value = "/aqi/rank")
-    public Object rank(@RequestParam(required = false, defaultValue = "10") int rank, @RequestParam int type){
+    public Object rank(@RequestParam(required = false, defaultValue = "9") int rank, @RequestParam int type){
         return cityService.rank(rank, type);
     }
 

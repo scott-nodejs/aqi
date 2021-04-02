@@ -97,6 +97,7 @@
         showByCity(1451, $('.selectpicker option:selected').val());
         $('#city a').on('click', function (e) {
             e.preventDefault()
+            $('#keyword').val('');
             $(this).siblings('a').removeClass('active');  // 删除其兄弟元素的样式
             $(this).addClass('active');
             $("#dayTime .form-control").val(now);
@@ -126,25 +127,44 @@
             let  time = ev.date.valueOf();
             let datestr = new Date(time).format('yyyy-MM-dd');
             var selected = $('.selectpicker option:selected').val();
-            $('#city').children().map(function (index, e) {
-                if($(this).hasClass('active')){
-                    let id = $(this).attr('id');
-                    console.log(id);
-                    $.ajax({
-                        url:'/getPidData/'+id+'/'+selected+'?tmp='+datestr,//请求数据的地址
-                        type : "get",
-                        async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
-                        data : {},
-                        dataType : "json",        //返回数据形式为json
-                        success:function(result){
-                            pie(result['pie'])
-                            react(result['react'])
-                        },
-                        error:function(e){
-                        }
-                    });
-                }
-            });
+            let city = $('#keyword').val();
+            console.log(city);
+            if(city != ''){
+                $.ajax({
+                    url:'/getPidDataBySearch/'+selected+'?tmp='+datestr+'&city='+city,//请求数据的地址
+                    type : "get",
+                    async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
+                    data : {},
+                    dataType : "json",        //返回数据形式为json
+                    success:function(result){
+                        pie(result['pie'])
+                        react(result['react'])
+                    },
+                    error:function(e){
+                    }
+                });
+            }else{
+                $('#city').children().map(function (index, e) {
+                    if($(this).hasClass('active')){
+                        let id = $(this).attr('id');
+                        console.log(id);
+                        $.ajax({
+                            url:'/getPidData/'+id+'/'+selected+'?tmp='+datestr,//请求数据的地址
+                            type : "get",
+                            async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
+                            data : {},
+                            dataType : "json",        //返回数据形式为json
+                            success:function(result){
+                                pie(result['pie'])
+                                react(result['react'])
+                            },
+                            error:function(e){
+                            }
+                        });
+                    }
+                });
+            }
+
         });
     });
 
@@ -158,7 +178,7 @@
             data : {},
             dataType : "json",        //返回数据形式为json
             success:function(result){
-                $('#keyword').val("");
+                // $('#keyword').val("");
                 if(result.code == 200){
                     showByCity(result.data, selected);
                 }else{
@@ -245,7 +265,7 @@
             yAxis: {
                 min: 0,
                 title: {
-                    text: '人口 (百万)'
+                    enabled: false
                 }
             },
             legend: {

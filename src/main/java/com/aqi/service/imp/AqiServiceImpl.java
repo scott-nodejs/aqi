@@ -86,7 +86,10 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
         City city = cityService.getCityByUid(cityId);
         int start = city.getCity().indexOf("(");
         int end = city.getCity().indexOf(")");
-        String name = city.getCity().substring(start+1,end);
+        String name = city.getCity();
+        if(start != -1 && end != -1){
+            name = city.getCity().substring(start+1,end);
+        }
         QueryWrapper<Aqi> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("uid",cityId);
         //只获取近三十天的数据

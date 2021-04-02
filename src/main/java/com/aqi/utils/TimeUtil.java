@@ -22,6 +22,12 @@ public class TimeUtil {
         return dtf.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault()));
     }
 
+    public static String convertMillisToDay(Long time) {
+        Assert.notNull(time, "time is null");
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        return dtf.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault()));
+    }
+
     public static Long convertStringToMillis(String time) {
         Assert.notNull(time, "time is null");
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");

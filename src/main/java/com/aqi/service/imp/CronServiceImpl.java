@@ -15,10 +15,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -55,6 +58,12 @@ public class CronServiceImpl implements CronService {
 
     @Autowired
     private ComputerService computerService;
+    
+    @Autowired
+    private RedisService redisService;
+
+    @Autowired
+    private RankService rankService;
 
     ExecutorService es = Executors.newFixedThreadPool(10);
 
@@ -170,8 +179,10 @@ public class CronServiceImpl implements CronService {
         List<City> citys = cityService.getCity(current);
         citys.forEach(city -> {
             try{
-                UrlEntity urlEntity = sendCity(city, TimeUtil.getHour());
-                sendService.sendCity(RabbitMqConfig.ROUTINGKEY_FAIL,urlEntity, 5 * 60);
+                if(city.getUrl() != null){
+                    UrlEntity urlEntity = sendCity(city, TimeUtil.getHour());
+                    sendService.sendCity(RabbitMqConfig.ROUTINGKEY_FAIL,urlEntity, 5 * 60);
+                }
             }catch (Exception e){
                 log.error("拉取失败 城市更新aqi失败：", e);
             }
@@ -198,8 +209,10 @@ public class CronServiceImpl implements CronService {
         List<Area> areas = areaService.getArea(current);
         areas.forEach(city -> {
             try{
-                UrlEntity urlEntity = sendArea(city, TimeUtil.getHour());
-                sendService.send(urlEntity, 5*60);
+                if(city.getUrl() != null){
+                    UrlEntity urlEntity = sendArea(city, TimeUtil.getHour());
+                    sendService.send(urlEntity, 5*60);
+                }
             }catch (Exception e){
                 log.error("拉取失败 区域更新aqi失败：", e);
             }
@@ -241,13 +254,17 @@ public class CronServiceImpl implements CronService {
         });
         List<City> cities = cityService.selectCityByIsUpdate();
         cities.forEach(city -> {
-            UrlEntity urlEntity = sendCity(city, vtime);
-            sendService.sendCity(RabbitMqConfig.ROUTINGKEY_HALF_HOUR, urlEntity, 30 * 60);
+            if(city.getUrl() != null){
+                UrlEntity urlEntity = sendCity(city, vtime);
+                sendService.sendCity(RabbitMqConfig.ROUTINGKEY_HALF_HOUR, urlEntity, 30 * 60);
+            }
         });
         List<Area> areas = areaService.selectAreaByIsUpdate();
         areas.forEach(area -> {
-            UrlEntity urlEntity = sendArea(area, vtime);
-            sendService.sendCity(RabbitMqConfig.ROUTINGKEY_HALF_HOUR, urlEntity, 15 * 60);
+            if(area.getUrl() != null){
+                UrlEntity urlEntity = sendArea(area, vtime);
+                sendService.sendCity(RabbitMqConfig.ROUTINGKEY_HALF_HOUR, urlEntity, 15 * 60);
+            }
         });
 
         cityService.updateTime(TimeUtil.getHour());
@@ -328,6 +345,27 @@ public class CronServiceImpl implements CronService {
     @Override
     public void crongenRank() {
         cityService.getRank();
+    }
+
+    @Override
+    public void cronInsterRank() {
+        String s = TimeUtil.convertMillisToDay(System.currentTimeMillis()) + " 00:00:00";
+        long start = TimeUtil.date2TimeStamp(s, "yyyy-MM-dd hh:mm:ss");
+        Set<ZSetOperations.TypedTuple<Object>> typedTuples = redisService.zgetByScore(300, 1);
+        Iterator<ZSetOperations.TypedTuple<Object>> iterator = typedTuples.iterator();
+        while (iterator.hasNext()){
+            ZSetOperations.TypedTuple<Object> next = iterator.next();
+            String uid = (String) next.getValue();
+            double score = next.getScore();
+            String uuid = start + "_" + uid;
+            Rank rank = new Rank();
+            rank.setUuid(uuid);
+            rank.setUid(Integer.parseInt(uid));
+            rank.setPara((int)score);
+            rank.setVtime(Integer.parseInt(start+""));
+            rank.setFtime(TimeUtil.convertMillisToDay(System.currentTimeMillis()));
+            rankService.save(rank);
+        }
     }
 
     public UrlEntity sendCity(City city, long time){

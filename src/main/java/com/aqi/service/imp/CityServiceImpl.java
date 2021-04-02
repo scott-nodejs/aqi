@@ -184,6 +184,10 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
 
     @Override
     public void getRank() {
+        String s = TimeUtil.convertMillisToDay(System.currentTimeMillis()) + " 00:00:00";
+        String e = TimeUtil.convertMillisToDay(System.currentTimeMillis()) + " 23:59:59";
+        long start = TimeUtil.date2TimeStamp(s, "yyyy-MM-dd hh:mm:ss");
+        long end = TimeUtil.date2TimeStamp(e, "yyyy-MM-dd hh:mm:ss");
         List<String> uids;
         Object cityAlluids = redisService.getString(GlobalConstant.CITY_UIDS);
         if(cityAlluids == null){
@@ -197,6 +201,7 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
             es.execute(()->{
                 QueryWrapper<Aqi> queryWrapper = new QueryWrapper<>();
                 queryWrapper.eq("uid", Integer.parseInt(uid));
+                queryWrapper.between("vtime", start, end);
                 List<Aqi> aqis = aqiService.list(queryWrapper);
                 int score = computerService.computeByRank(aqis, 2);
                 redisService.zadd(uid, score*1.0);
@@ -227,12 +232,14 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
         QueryWrapper<City> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("uid", uids);
         List<City> citys = baseMapper.selectList(queryWrapper);
-        citys.forEach(city -> {
-            int start = city.getCity().indexOf("(");
-            int end = city.getCity().indexOf(")");
-            String name = city.getCity();
+        Map<Integer, String> uidNameMap = citys.stream().collect(Collectors.toMap(City::getUid, City::getCity));
+        uids.forEach(uid -> {
+            String city = uidNameMap.get(Integer.parseInt(uid));
+            int start = city.indexOf("(");
+            int end = city.indexOf(")");
+            String name = city;
             if(start != -1 && end != -1){
-                name = city.getCity().substring(start+1,end);
+                name = city.substring(start+1,end);
             }
             x.add(name);
         });

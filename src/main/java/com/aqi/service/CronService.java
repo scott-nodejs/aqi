@@ -22,4 +22,6 @@ public interface CronService {
     void cronMouthAqi(int cityId, String tmp);
 
     void crongenRank();
+
+    void cronInsterRank();
 }
