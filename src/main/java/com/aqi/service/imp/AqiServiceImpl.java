@@ -2,6 +2,8 @@ package com.aqi.service.imp;
 
 import com.aqi.configer.exception.ResultException;
 import com.aqi.entity.*;
+import com.aqi.entity.api.ClientVo;
+import com.aqi.entity.api.EnvEntity;
 import com.aqi.global.GlobalConstant;
 import com.aqi.mapper.aqi.AqiMapper;
 import com.aqi.service.*;
@@ -9,13 +11,10 @@ import com.aqi.utils.TimeUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @Service
@@ -79,6 +78,55 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public Object selectAqiByClient(int cityId, int type) {
+        City city = cityService.getCityByUid(cityId);
+        int start = city.getCity().indexOf("(");
+        int end = city.getCity().indexOf(")");
+        String name = city.getCity();
+        if(start != -1 && end != -1){
+            name = city.getCity().substring(start+1,end);
+        }
+        QueryWrapper<Aqi> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("uid",cityId);
+        //只获取近三十天的数据
+        long endtime = TimeUtil.getHour();
+        long starttime = endtime - 7*24*60*60;
+        queryWrapper.between("vtime", starttime, endtime);
+        queryWrapper.orderByAsc("vtime");
+        List<Aqi> aqis = baseMapper.selectList(queryWrapper);
+        List<Map<String, Object>> aqiList = aqis.stream().map(aqi -> {
+            Map<String,Object> node = new HashMap<>();
+            int time = aqi.getVtime() + 8 * 60 * 60;
+            String t = time + "000";
+            node.put("date",Long.parseLong(t));
+            if(aqi.getAqi() == 0){
+                if(type == 1){
+                    int china = getChina(Integer.valueOf(aqi.getPm25().replace(".0","")));
+                    node.put("aqi",Long.valueOf(china));
+                }
+                node.put("aqi",Long.valueOf(aqi.getPm25().replace(".0","")));
+            }else{
+                if(type == 1){
+                    int china = getChina(aqi.getAqi());
+                    node.put("aqi",Long.valueOf(china));
+                }else{
+                    node.put("aqi", Long.valueOf(aqi.getAqi()));
+                }
+            }
+            return node;}).collect(Collectors.toList());
+        ClientVo aqiVo = new ClientVo();
+        EnvEntity envEntity = new EnvEntity();
+        envEntity.setAqi(120);
+        envEntity.setPm10(100);
+        envEntity.setCo(20);
+        envEntity.setO3(10);
+        envEntity.setSo2(30);
+        aqiVo.setEnvEntity(envEntity);
+        aqiVo.setData(aqiList);
+        return aqiVo;
     }
 
     @Override

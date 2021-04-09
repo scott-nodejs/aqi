@@ -14,4 +14,5 @@ public class Rank {
     private int para;
     private int vtime;
     private String ftime;
+    private int rank;
 }

@@ -66,9 +66,22 @@ public class AqiController {
         return aqiService.selectAreaAqiByCityId(id, type, l);
     }
 
+    @GetMapping(value = "/getAreaAqiByCityName/{type}")
+    public Object getAreaAqiByCityName(@PathVariable int type, String tmp,String city){
+        int l = (int) (TimeUtil.convertStringToMillis(tmp+ " 00:00:00") / 1000);
+        City cityByName = cityService.getCityByName(city);
+        return aqiService.selectAreaAqiByCityId(cityByName.getUid(), type, l);
+    }
+
     @GetMapping(value = "/getMouthAreaAqiByCity/{id}/{type}")
     public Object getMouthAreaAqiByCity(@PathVariable int id, @PathVariable int type, String tmp){
         return aqiService.selectAreaByMouth(id, type, tmp);
+    }
+
+    @GetMapping(value = "/getMouthAreaAqiByCityName/{type}")
+    public Object getMouthAreaAqiByCityName(@PathVariable int type, String tmp, String city){
+        City cityByName = cityService.getCityByName(city);
+        return aqiService.selectAreaByMouth(cityByName.getUid(), type, tmp);
     }
 
     @GetMapping(value = "/waqi/sycn")

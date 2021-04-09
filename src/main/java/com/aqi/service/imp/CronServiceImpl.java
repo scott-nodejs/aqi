@@ -351,9 +351,11 @@ public class CronServiceImpl implements CronService {
     public void cronInsterRank() {
         String s = TimeUtil.convertMillisToDay(System.currentTimeMillis()) + " 00:00:00";
         long start = TimeUtil.date2TimeStamp(s, "yyyy-MM-dd hh:mm:ss");
-        Set<ZSetOperations.TypedTuple<Object>> typedTuples = redisService.zgetByScore(300, 1);
+        Set<ZSetOperations.TypedTuple<Object>> typedTuples = redisService.zgetByScore(300, 0);
         Iterator<ZSetOperations.TypedTuple<Object>> iterator = typedTuples.iterator();
+        int i = 0;
         while (iterator.hasNext()){
+            i++;
             ZSetOperations.TypedTuple<Object> next = iterator.next();
             String uid = (String) next.getValue();
             double score = next.getScore();
@@ -362,6 +364,7 @@ public class CronServiceImpl implements CronService {
             rank.setUuid(uuid);
             rank.setUid(Integer.parseInt(uid));
             rank.setPara((int)score);
+            rank.setRank(i);
             rank.setVtime(Integer.parseInt(start+""));
             rank.setFtime(TimeUtil.convertMillisToDay(System.currentTimeMillis()));
             rankService.save(rank);
