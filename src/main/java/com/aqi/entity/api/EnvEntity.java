@@ -5,8 +5,8 @@ import lombok.Data;
 @Data
 public class EnvEntity {
     private int aqi;
-    private int pm10;
-    private int so2;
-    private int co;
-    private int o3;
+    private String pm10;
+    private String so2;
+    private String co;
+    private String o3;
 }

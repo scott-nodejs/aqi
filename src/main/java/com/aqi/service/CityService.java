@@ -4,6 +4,7 @@ import com.aqi.entity.Aqi;
 import com.aqi.entity.City;
 import com.aqi.entity.NoResult;
 import com.aqi.entity.UrlEntity;
+import com.aqi.entity.api.RankVo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
@@ -34,4 +35,6 @@ public interface CityService extends IService<City> {
     void getRank();
 
     Map<String, Object> rank(int rank, int type);
+
+    RankVo rankByClient(int rank, int type);
 }

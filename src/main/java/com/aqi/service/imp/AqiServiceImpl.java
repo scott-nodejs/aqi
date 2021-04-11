@@ -80,28 +80,30 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
         }
     }
 
-    @Override
-    public Object selectAqiByClient(int cityId, int type) {
-        City city = cityService.getCityByUid(cityId);
-        int start = city.getCity().indexOf("(");
-        int end = city.getCity().indexOf(")");
-        String name = city.getCity();
-        if(start != -1 && end != -1){
-            name = city.getCity().substring(start+1,end);
-        }
+    public List<Aqi> getAqisByCondition(int cityId, int type, int hours){
         QueryWrapper<Aqi> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("uid",cityId);
-        //只获取近三十天的数据
         long endtime = TimeUtil.getHour();
-        long starttime = endtime - 7*24*60*60;
+        long starttime = endtime - hours*60*60;
         queryWrapper.between("vtime", starttime, endtime);
         queryWrapper.orderByAsc("vtime");
         List<Aqi> aqis = baseMapper.selectList(queryWrapper);
+        return aqis;
+    }
+
+    public List<Map<String, Object>> getMap(List<Aqi> aqis, int type, String key){
         List<Map<String, Object>> aqiList = aqis.stream().map(aqi -> {
             Map<String,Object> node = new HashMap<>();
             int time = aqi.getVtime() + 8 * 60 * 60;
-            String t = time + "000";
-            node.put("date",Long.parseLong(t));
+            if(key.equals("date")){
+                String t = time + "000";
+                node.put(key,Long.parseLong(t));
+            }else{
+                String hour = aqi.getFtime().split(" ")[1];
+                String s = hour.split(":")[0];
+                node.put(key,s+":00");
+            }
+
             if(aqi.getAqi() == 0){
                 if(type == 1){
                     int china = getChina(Integer.valueOf(aqi.getPm25().replace(".0","")));
@@ -117,15 +119,26 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
                 }
             }
             return node;}).collect(Collectors.toList());
+        return aqiList;
+    }
+
+    @Override
+    public Object selectAqiByClient(int cityId, int type) {
+        List<Aqi> aqis = getAqisByCondition(cityId,type,7*24);
+        List<Map<String,Object>> aqiList = getMap(aqis, type, "date");
         ClientVo aqiVo = new ClientVo();
         EnvEntity envEntity = new EnvEntity();
-        envEntity.setAqi(120);
-        envEntity.setPm10(100);
-        envEntity.setCo(20);
-        envEntity.setO3(10);
-        envEntity.setSo2(30);
+        Aqi aqi = aqis.get(aqis.size() - 1);
+        List<Aqi> aqis1 = aqis.subList(aqis.size() - 8, aqis.size() - 1);
+        List<Map<String, Object>> react = getMap(aqis1, type, "hour");
+        envEntity.setAqi(aqi.getAqi());
+        envEntity.setPm10(aqi.getPm10());
+        envEntity.setCo(aqi.getCo());
+        envEntity.setO3(aqi.getO3());
+        envEntity.setSo2(aqi.getSo2());
         aqiVo.setEnvEntity(envEntity);
         aqiVo.setData(aqiList);
+        aqiVo.setReact(react);
         return aqiVo;
     }
 
@@ -138,14 +151,7 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
         if(start != -1 && end != -1){
             name = city.getCity().substring(start+1,end);
         }
-        QueryWrapper<Aqi> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("uid",cityId);
-        //只获取近三十天的数据
-        long endtime = TimeUtil.getHour();
-        long starttime = endtime - 30*24*60*60;
-        queryWrapper.between("vtime", starttime, endtime);
-        queryWrapper.orderByAsc("vtime");
-        List<Aqi> aqis = baseMapper.selectList(queryWrapper);
+        List<Aqi> aqis = getAqisByCondition(cityId,type,30*24);
         List<List<Long>> aqiList = aqis.stream().map(aqi -> {
             List<Long> node = new ArrayList<>();
 //            String[] split = aqi.getUuid().split("_");

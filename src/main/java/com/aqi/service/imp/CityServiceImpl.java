@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.aqi.amqp.RabbitMqConfig;
 import com.aqi.entity.*;
+import com.aqi.entity.api.RankVo;
 import com.aqi.global.GlobalConstant;
 import com.aqi.mapper.city.CityMapper;
 import com.aqi.service.*;
@@ -252,5 +253,36 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
         map.put("x", x);
         map.put("y", obj);
         return map;
+    }
+
+    @Override
+    public RankVo rankByClient(int rank, int type) {
+        List<City> citys = new ArrayList<>();
+        List<Map<String,Object>> y = new ArrayList<>();
+        Set<ZSetOperations.TypedTuple<Object>> typedTuples = redisService.zgetByScore(rank,type);;
+        Iterator<ZSetOperations.TypedTuple<Object>> iterator = typedTuples.iterator();
+        while (iterator.hasNext()){
+            ZSetOperations.TypedTuple<Object> next = iterator.next();
+            String uid = (String) next.getValue();
+            QueryWrapper<City> queryWrapper = new QueryWrapper<>();
+            queryWrapper.in("uid", uid);
+            City city = baseMapper.selectOne(queryWrapper);
+            citys.add(city);
+            double score = next.getScore();
+            Map<String, Object> map = new HashMap<>();
+            int start = city.getCity().indexOf("(");
+            int end = city.getCity().indexOf(")");
+            String name = city.getCity();
+            if(start != -1 && end != -1){
+                name = city.getCity().substring(start+1,end);
+            }
+            map.put("name", name);
+            map.put("score", Math.abs((int) score));
+            y.add(map);
+        }
+        RankVo rankVo = new RankVo();
+        rankVo.setCitys(citys);
+        rankVo.setRanks(y);
+        return rankVo;
     }
 }
