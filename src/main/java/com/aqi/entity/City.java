@@ -17,4 +17,6 @@ public class City {
     private String url;
     private int vtime;
     private int isUpdate;
+    private String province;
+    private String feature;
 }

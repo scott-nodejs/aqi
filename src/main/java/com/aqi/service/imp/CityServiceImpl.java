@@ -267,15 +267,16 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
             QueryWrapper<City> queryWrapper = new QueryWrapper<>();
             queryWrapper.in("uid", uid);
             City city = baseMapper.selectOne(queryWrapper);
-            citys.add(city);
-            double score = next.getScore();
-            Map<String, Object> map = new HashMap<>();
             int start = city.getCity().indexOf("(");
             int end = city.getCity().indexOf(")");
             String name = city.getCity();
             if(start != -1 && end != -1){
                 name = city.getCity().substring(start+1,end);
             }
+            city.setCity(name);
+            citys.add(city);
+            double score = next.getScore();
+            Map<String, Object> map = new HashMap<>();
             map.put("name", name);
             map.put("score", Math.abs((int) score));
             y.add(map);
@@ -283,6 +284,7 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
         RankVo rankVo = new RankVo();
         rankVo.setCitys(citys);
         rankVo.setRanks(y);
+        rankVo.setType(type);
         return rankVo;
     }
 }

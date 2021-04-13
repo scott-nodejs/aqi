@@ -811,10 +811,11 @@ public class Test {
     public static void main(String[] args) {
         try {
             boolean flag = false;
-            Map<String,String> map = new HashMap<>();
-            BufferedReader in = new BufferedReader(new FileReader("D:\\aqi\\aqi\\src\\main\\resources\\city.txt"));
+            BufferedReader in = new BufferedReader(new FileReader("D:\\iciba\\aqi\\src\\main\\resources\\city.txt"));
             String str;
+            List<Map<String,String>> list = new ArrayList<>();
             while ((str = in.readLine()) != null) {
+                Map<String,String> map = new HashMap<>();
                 String[] split = str.split("\t");
                 String name1 = split[1];
                 int start = name1.indexOf("(");
@@ -823,29 +824,32 @@ public class Test {
                 if(start != -1 && end != -1){
                     name = name1.substring(start+1,end);
                 }
-                map.put(name,split[0]);
+                map.put("firstCharacter", name1.substring(0,1));
+                map.put("cityCode",split[0]);
+                map.put("name",name);
+                list.add(map);
             }
-            Iterator<Map.Entry<String, String>> iterator = map.entrySet().iterator();
-            ArrayList<JSONObject> list = (ArrayList<JSONObject>) JSONObject.parseArray(json).toJavaList(JSONObject.class);
-            ArrayList<JSONObject> list1 = (ArrayList<JSONObject>) list.clone();
-            Iterator<JSONObject> iterator1 = list.iterator();
-            while (iterator1.hasNext()){
-                JSONObject obj = iterator1.next();
-                for (Map.Entry<String, String> e : map.entrySet()){
-                    //System.out.println(obj.getString("name")+" "+e.getKey());
-                    if(obj.getString("name").contains(e.getKey())){
-                        obj.put("cityCode", e.getValue());
-                        flag = true;
-                        break;
-                    }
-                }
-                if(!flag){
-                    System.out.println(obj.getString("name"));
-                    list1.remove(obj);
-                }
-                flag = false;
-            }
-            System.out.println(JSONObject.toJSONString(list1));
+//            Iterator<Map.Entry<String, String>> iterator = map.entrySet().iterator();
+//            ArrayList<JSONObject> list = (ArrayList<JSONObject>) JSONObject.parseArray(json).toJavaList(JSONObject.class);
+//            ArrayList<JSONObject> list1 = (ArrayList<JSONObject>) list.clone();
+//            Iterator<JSONObject> iterator1 = list.iterator();
+//            while (iterator1.hasNext()){
+//                JSONObject obj = iterator1.next();
+//                for (Map.Entry<String, String> e : map.entrySet()){
+//                    //System.out.println(obj.getString("name")+" "+e.getKey());
+//                    if(obj.getString("name").contains(e.getKey())){
+//                        obj.put("cityCode", e.getValue());
+//                        flag = true;
+//                        break;
+//                    }
+//                }
+//                if(!flag){
+//                    System.out.println(obj.getString("name"));
+//                    list1.remove(obj);
+//                }
+//                flag = false;
+//            }
+            System.out.println(JSONObject.toJSONString(list));
         } catch (IOException e) {
             e.printStackTrace();
         }

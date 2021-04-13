@@ -20,6 +20,11 @@ public class ClientController {
         return aqiService.selectAqiByClient(id, type);
     }
 
+    @GetMapping(value = "/getAqiByCity/{type}")
+    public Object getAqiByLocation(@PathVariable int type, @RequestParam String location){
+        return aqiService.selectAqiByLocation(location, type);
+    }
+
     @GetMapping(value = "/getRankByCity")
     public Object getRankByCityId(@RequestParam int type){
         return cityService.rankByClient(9, type);

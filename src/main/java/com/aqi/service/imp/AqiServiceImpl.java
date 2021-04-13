@@ -7,6 +7,7 @@ import com.aqi.entity.api.EnvEntity;
 import com.aqi.global.GlobalConstant;
 import com.aqi.mapper.aqi.AqiMapper;
 import com.aqi.service.*;
+import com.aqi.utils.LocationUtil;
 import com.aqi.utils.TimeUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -14,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -80,6 +82,18 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
         }
     }
 
+    @Override
+    public Object selectAqiByLocation(String location, int type) {
+        try{
+            String cityName = LocationUtil.getLocationBylanlng(location);
+            Integer cityId = this.selectAqiByCityName(cityName);
+            return this.selectAqiByClient(cityId, type);
+        }catch (Exception e){
+            log.error("定位异常: " + location);
+            return this.selectAqiByClient(1451, type);
+        }
+    }
+
     public List<Aqi> getAqisByCondition(int cityId, int type, int hours){
         QueryWrapper<Aqi> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("uid",cityId);
@@ -131,15 +145,94 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
         Aqi aqi = aqis.get(aqis.size() - 1);
         List<Aqi> aqis1 = aqis.subList(aqis.size() - 8, aqis.size() - 1);
         List<Map<String, Object>> react = getMap(aqis1, type, "hour");
-        envEntity.setAqi(aqi.getAqi());
+        envEntity.setAqi(aqi.getPm25());
         envEntity.setPm10(aqi.getPm10());
         envEntity.setCo(aqi.getCo());
         envEntity.setO3(aqi.getO3());
         envEntity.setSo2(aqi.getSo2());
         aqiVo.setEnvEntity(envEntity);
+        getColorInt(aqi.getAqi(),envEntity);
+        setState(aqi, envEntity);
+        envEntity.setDesc("  更新于"+aqi.getFtime());
+        if(aqi.getAqi() >= 100){
+            envEntity.setFlag(1);
+        }else{
+            envEntity.setFlag(0);
+        }
         aqiVo.setData(aqiList);
         aqiVo.setReact(react);
         return aqiVo;
+    }
+
+    public void getColorInt(int aqi, EnvEntity envEntity){
+        if(aqi > 0 && aqi <= 50){
+            envEntity.setColor(0xff009966);
+            envEntity.setLevel("空气质量优");
+        }else if(aqi > 50 && aqi <= 100){
+            envEntity.setColor(0xffFFDE33);
+            envEntity.setLevel("空气质量良");
+        }else if(aqi > 100 && aqi <= 150){
+            envEntity.setColor(0xffFF9933);
+            envEntity.setLevel("轻度污染");
+        }else if(aqi > 150 && aqi <= 200){
+            envEntity.setColor(0xCC0033);
+            envEntity.setLevel("中度污染");
+        }else if(aqi > 200 && aqi <= 300){
+            envEntity.setColor(0xff660099);
+            envEntity.setLevel("重度污染");
+        }else{
+            envEntity.setColor(0xff7E0023);
+            envEntity.setLevel("超级污染");
+        }
+    }
+
+    public void setState(Aqi aqi, EnvEntity envEntity){
+        if(aqi.getPm25() != null){
+            double v = Double.parseDouble(aqi.getPm25());
+            String state = getState(v);
+            envEntity.setAqiState(state);
+            envEntity.setSource("pm2.5");
+        }
+        if(aqi.getPm10() != null){
+            double v = Double.parseDouble(aqi.getPm10());
+            double v1 = Double.parseDouble(aqi.getPm25());
+            String state = getState(v);
+            envEntity.setPm10State(state);
+            if(v1 < v){
+                envEntity.setSource("pm10");
+            }
+        }
+        if(aqi.getSo2() != null){
+            double v = Double.parseDouble(aqi.getSo2());
+            String state = getState(v);
+            envEntity.setSo2State(state);
+        }
+        if(aqi.getCo() != null){
+            double v = Double.parseDouble(aqi.getCo());
+            String state = getState(v);
+            envEntity.setCoState(state);
+        }
+        if(aqi.getO3() != null){
+            double v = Double.parseDouble(aqi.getO3());
+            String state = getState(v);
+            envEntity.setO3State(state);
+        }
+
+    }
+
+    public String getState(double aqi){
+        if(aqi > 0 && aqi <= 50){
+            return "good";
+        }else if(aqi > 50 && aqi <= 100){
+            return "face";
+        }else if(aqi > 100 && aqi <= 150){
+            return "just";
+        }else if(aqi > 150 && aqi <= 200){
+            return "bad";
+        }else if(aqi > 200 && aqi <= 300){
+            return "sobad";
+        }
+        return "badest";
     }
 
     @Override

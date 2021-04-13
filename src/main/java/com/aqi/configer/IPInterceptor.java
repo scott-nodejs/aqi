@@ -21,7 +21,7 @@ import java.util.Map;
 @Slf4j
 public class IPInterceptor implements HandlerInterceptor {
 
-//    Logger iplogger = LoggerUtils.Logger(LogfileName.BIZ_IP);
+    Logger iplogger = LoggerUtils.Logger(LogfileName.BIZ_IP);
     
     @Value("${ip.path}")
     String ipPath;
@@ -41,7 +41,7 @@ public class IPInterceptor implements HandlerInterceptor {
         String str = sb.toString();
         String reg = "[^\u4e00-\u9fa5]";
         str = str.replaceAll(reg, "");
-        log.info("USER IP ADDRESS IS =>ip地址："+ipAddress+",来源: "+str+"=>"+requestURI+"=>"+para);
+        iplogger.info("USER IP ADDRESS IS =>ip地址："+ipAddress+",来源: "+str+"=>"+requestURI+"=>"+para);
         return true;
     }
 
