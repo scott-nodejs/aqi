@@ -175,7 +175,7 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
             envEntity.setColor(0xffFF9933);
             envEntity.setLevel("轻度污染");
         }else if(aqi > 150 && aqi <= 200){
-            envEntity.setColor(0xCC0033);
+            envEntity.setColor(0xffCC0033);
             envEntity.setLevel("中度污染");
         }else if(aqi > 200 && aqi <= 300){
             envEntity.setColor(0xff660099);

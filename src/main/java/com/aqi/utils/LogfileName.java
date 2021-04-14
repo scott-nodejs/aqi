@@ -3,7 +3,8 @@ package com.aqi.utils;
 public enum LogfileName {
 
     BIZ_IP("ipLog"),
-    BIZ_LOCATION("locationLog");
+    BIZ_LOCATION("locationLog"),
+    BIZ_IP_CLIENT("ipLogClient");
 
     private String logFileName;
 

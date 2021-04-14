@@ -143,6 +143,24 @@
         </encoder>
     </appender>
 
+    <appender name="ipClientLogAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${log.home.server}/ip/ip_client.log</File>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <append>true</append>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.home.server}/ip/ip_client.log.%d</fileNamePattern>
+            <maxHistory>12</maxHistory>
+        </rollingPolicy>
+        <encoder charset="UTF-8">
+            <pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] %level [%thread] %file:%line - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
     <appender name="locationLogAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <File>${log.home.server}/location/location.log</File>
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
@@ -163,6 +181,10 @@
 
     <logger name="ipLog" additivity="false" level="INFO">
         <appender-ref ref="ipLogAppender"/>
+    </logger>
+
+    <logger name="ipLogClient" additivity="false" level="INFO">
+        <appender-ref ref="ipClientLogAppender"/>
     </logger>
 
     <logger name="locationLog" additivity="false" level="INFO">
