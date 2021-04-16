@@ -14,7 +14,7 @@ public class Location {
     private String township;
 
     @Data
-    class StreetNumber{
+    public class StreetNumber{
         private String number;
         private String location;
         private String direction;

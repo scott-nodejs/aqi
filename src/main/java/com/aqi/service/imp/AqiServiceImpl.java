@@ -85,10 +85,15 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
     @Override
     public Object selectAqiByLocation(String location, int type) {
         try{
-            String cityName = LocationUtil.getLocationBylanlng(location);
+            Map<String,String> locationMap = LocationUtil.getLocationBylanlng(location);
+            String cityName = locationMap.get("city");
+            String loc = locationMap.get("loc");
             Integer cityId = this.selectAqiByCityName(cityName);
-            return this.selectAqiByClient(cityId, type);
+            ClientVo clientVo = (ClientVo) this.selectAqiByClient(cityId, type);
+            clientVo.setLoc(loc);
+            return clientVo;
         }catch (Exception e){
+            e.printStackTrace();
             log.error("定位异常: " + location);
             return this.selectAqiByClient(1451, type);
         }
@@ -138,12 +143,19 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
 
     @Override
     public Object selectAqiByClient(int cityId, int type) {
+        City city = cityService.getCityByUid(cityId);
+        int start = city.getCity().indexOf("(");
+        int end = city.getCity().indexOf(")");
+        String name = city.getCity();
+        if(start != -1 && end != -1){
+            name = city.getCity().substring(start+1,end);
+        }
         List<Aqi> aqis = getAqisByCondition(cityId,type,7*24);
         List<Map<String,Object>> aqiList = getMap(aqis, type, "date");
         ClientVo aqiVo = new ClientVo();
         EnvEntity envEntity = new EnvEntity();
         Aqi aqi = aqis.get(aqis.size() - 1);
-        List<Aqi> aqis1 = aqis.subList(aqis.size() - 8, aqis.size() - 1);
+        List<Aqi> aqis1 = aqis.subList(aqis.size() - 8, aqis.size());
         List<Map<String, Object>> react = getMap(aqis1, type, "hour");
         envEntity.setAqi(aqi.getPm25());
         envEntity.setPm10(aqi.getPm10());
@@ -159,6 +171,7 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
         }else{
             envEntity.setFlag(0);
         }
+        aqiVo.setName(name);
         aqiVo.setData(aqiList);
         aqiVo.setReact(react);
         return aqiVo;
