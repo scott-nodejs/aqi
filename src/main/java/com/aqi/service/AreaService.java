@@ -31,4 +31,8 @@ public interface AreaService extends IService<Area> {
     List<Area> getRandAreaList();
 
     void addArea(List<Integer> uids, Integer pId);
+
+    void addAreaAqiAll(UrlEntity urlEntity);
+
+    void addPoint();
 }

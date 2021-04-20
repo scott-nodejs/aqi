@@ -57,9 +57,25 @@ public class keywordTask {
     /**
      * 随机爬取附近节点的pm2.5
      */
+    @Scheduled(cron = "0 0/10 * * * ?")
+    public void all(){
+        cronService.cronAreaAll();
+    }
+
+    /**
+     * 随机爬取附近节点的pm2.5
+     */
     @Scheduled(cron = "0 30 * * * ?")
     public void sycnWaqi(){
         cronService.cronSycnWaqi();
+    }
+
+    /**
+     * 定时删除waqi数据 保证waqi表数据数量少
+     */
+    @Scheduled(cron = "0 30 * * * ?")
+    public void deleteWaqi(){
+        cronService.cronDeleteWaqi();
     }
 
     /**

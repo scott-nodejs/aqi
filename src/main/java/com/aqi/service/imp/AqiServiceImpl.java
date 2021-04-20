@@ -1,5 +1,6 @@
 package com.aqi.service.imp;
 
+import com.alibaba.fastjson.JSON;
 import com.aqi.configer.exception.ResultException;
 import com.aqi.entity.*;
 import com.aqi.entity.api.ClientVo;
@@ -9,6 +10,9 @@ import com.aqi.mapper.aqi.AqiMapper;
 import com.aqi.service.*;
 import com.aqi.utils.LocationUtil;
 import com.aqi.utils.TimeUtil;
+import com.aqi.utils.http.HttpRequestConfig;
+import com.aqi.utils.http.HttpRequestResult;
+import com.aqi.utils.http.HttpUtils;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -35,15 +39,23 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
     @Autowired
     ComputerService computerService;
 
+    @Autowired
+    RedisService redisService;
+
     @Override
     public void insertAqi(Aqi aqi) {
-        QueryWrapper<Waqi> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("uuid", aqi.getUuid());
-        baseMapper.insert(aqi);
-        Waqi aqi1 = waqiService.getOne(queryWrapper);
-        if(aqi1 != null){
-            waqiService.removeById(aqi1.getUuid());
+        try{
+            QueryWrapper<Waqi> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("uuid", aqi.getUuid());
+            baseMapper.insert(aqi);
+            Waqi aqi1 = waqiService.getOne(queryWrapper);
+            if(aqi1 != null){
+                waqiService.removeById(aqi1.getUuid());
+            }
+        }catch (Exception e){
+            log.error("主键冲突: " + aqi.getUuid());
         }
+
     }
 
     @Override
@@ -88,8 +100,17 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
             Map<String,String> locationMap = LocationUtil.getLocationBylanlng(location);
             String cityName = locationMap.get("city");
             String loc = locationMap.get("loc");
-            Integer cityId = this.selectAqiByCityName(cityName);
-            ClientVo clientVo = (ClientVo) this.selectAqiByClient(cityId, type);
+            String[] locArr = location.split(",");
+            String point = redisService.getLastestPoint(Double.parseDouble(locArr[0]), Double.parseDouble(locArr[1]));
+            ClientVo clientVo;
+            if(point.equals("")){
+                Integer cityId = this.selectAqiByCityName(cityName);
+                clientVo = (ClientVo) this.selectAqiByClient(cityId, type);
+            }else{
+                Integer cityId = Integer.parseInt(point);
+                clientVo = (ClientVo) this.selectAqiByArea(cityId, type);
+            }
+            clientVo.setName(cityName);
             clientVo.setLoc(loc);
             return clientVo;
         }catch (Exception e){
@@ -159,7 +180,43 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
         List<Map<String, Object>> react = getMap(aqis1, type, "hour");
         envEntity.setAqi(aqi.getPm25());
         envEntity.setPm10(aqi.getPm10());
-        envEntity.setCo(aqi.getCo());
+        envEntity.setCo(aqi.getNo2());
+        envEntity.setO3(aqi.getO3());
+        envEntity.setSo2(aqi.getSo2());
+        aqiVo.setEnvEntity(envEntity);
+        getColorInt(aqi.getAqi(),envEntity);
+        setState(aqi, envEntity);
+        envEntity.setDesc("  更新于"+aqi.getFtime());
+        if(aqi.getAqi() >= 100){
+            envEntity.setFlag(1);
+        }else{
+            envEntity.setFlag(0);
+        }
+        aqiVo.setName(name);
+        aqiVo.setData(aqiList);
+        aqiVo.setReact(react);
+        return aqiVo;
+    }
+
+    @Override
+    public Object selectAqiByArea(int cityId, int type) {
+        Area city = areaService.getAreaByUid(cityId);
+        int start = city.getName().indexOf("(");
+        int end = city.getName().indexOf(")");
+        String name = city.getName();
+        if(start != -1 && end != -1){
+            name = city.getName().substring(start+1,end);
+        }
+        List<Aqi> aqis = getAqisByCondition(cityId,type,7*24);
+        List<Map<String,Object>> aqiList = getMap(aqis, type, "date");
+        ClientVo aqiVo = new ClientVo();
+        EnvEntity envEntity = new EnvEntity();
+        Aqi aqi = aqis.get(aqis.size() - 1);
+        List<Aqi> aqis1 = aqis.subList(aqis.size() - 8, aqis.size());
+        List<Map<String, Object>> react = getMap(aqis1, type, "hour");
+        envEntity.setAqi(aqi.getPm25());
+        envEntity.setPm10(aqi.getPm10());
+        envEntity.setCo(aqi.getNo2());
         envEntity.setO3(aqi.getO3());
         envEntity.setSo2(aqi.getSo2());
         aqiVo.setEnvEntity(envEntity);
@@ -196,6 +253,22 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
         }else{
             envEntity.setColor(0xff7E0023);
             envEntity.setLevel("超级污染");
+        }
+    }
+
+    public int getColorInt(int aqi){
+        if(aqi > 0 && aqi <= 50){
+            return 0xff009966;
+        }else if(aqi > 50 && aqi <= 100){
+            return 0xffFFDE33;
+        }else if(aqi > 100 && aqi <= 150){
+            return 0xffFF9933;
+        }else if(aqi > 150 && aqi <= 200){
+            return 0xffCC0033;
+        }else if(aqi > 200 && aqi <= 300){
+            return 0xff660099;
+        }else{
+            return 0xff7E0023;
         }
     }
 
@@ -621,6 +694,82 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
         else{
             return aqi;
         }
+    }
+
+    @Override
+    public Object getMapAqi() {
+        try{
+            String url = "http://mapi3.aqicn.org/mapi/?bounds=(3.311143000000,103.073730000000),(54.098060000000,126.804199000000))&zoom=11.0&v=2&sid=174234829&lang=zh&package=Asia&appv=132&appn=3.5&tz=28800000&metrics=1080,2211,3.0&wifi=&devid=6fb268749236975d";
+            HttpRequestConfig config = new HttpRequestConfig();
+            config.url(url);
+            HttpRequestResult result = HttpUtils.get(config);
+            MapResult mapResult = JSON.parseObject(result.getResponseText(), MapResult.class);
+            List<MapResult.Geo> m = mapResult.getM();
+            m.forEach(g->{
+                if(g.getA().equals("-")){
+                    g.setColor(0xff808080);
+                    g.setA("0");
+                }else{
+                    int color = getColorInt(Integer.parseInt(g.getA()));
+                    g.setColor(color);
+                }
+            });
+            Map<String,List<MapResult.Geo>> map = new HashMap<>();
+            map.put("items", m);
+            return map;
+        }catch (Exception e){
+            log.error("获取地图aqi失败: "+ e);
+        }
+        return null;
+    }
+
+    @Override
+    public Object getWaqiMap() {
+        Map<Integer,Area> areas = areaService.list().stream().collect(Collectors.toMap(Area::getUid,area->area));
+        QueryWrapper<Waqi> queryWrapper = new QueryWrapper<>();
+        queryWrapper.and(wrapper -> wrapper.eq("vtime", TimeUtil.getHour()).or().eq("vtime", TimeUtil.getHour(System.currentTimeMillis() - 60*60*1000)));
+        List<Waqi> list = waqiService.list(queryWrapper);
+        Map<String, Waqi> map = new HashMap<>();
+        list.forEach(waqi -> {
+            if(map.containsKey(waqi.getUid())){
+                Waqi waqi1 = map.get(waqi.getUid());
+                if(waqi.getVtime() < waqi1.getVtime()){
+                    map.put(waqi.getUid()+"",waqi);
+                }
+            }else{
+                map.put(waqi.getUid()+"",waqi);
+            }
+        });
+        Iterator<Map.Entry<String, Waqi>> iterator = map.entrySet().iterator();
+        List<MapResult.Geo> m = new ArrayList<>();
+        while (iterator.hasNext()){
+            Map.Entry<String, Waqi> next = iterator.next();
+            MapResult.Geo geo = new MapResult.Geo();
+            Area area = areas.get(Integer.parseInt(next.getKey()));
+            if(area == null){
+                continue;
+            }
+            List<Double> g = new ArrayList<>();
+            g.add(area.getLat());
+            g.add(area.getLon());
+            geo.setG(g);
+            geo.setA(String.valueOf(next.getValue().getAqi()));
+            geo.setX(next.getKey());
+            String name = area.getName();
+            int start = area.getName().indexOf("(");
+            int end = area.getName().indexOf(")");
+            if(start != -1 && end != -1){
+                name = area.getName().substring(start+1,end);
+            }
+            geo.setName(name);
+            geo.setUpdateTime(TimeUtil.convertMillisToString(Long.valueOf(next.getValue().getVtime()+"000")));
+            int color = getColorInt(next.getValue().getAqi());
+            geo.setColor(color);
+            m.add(geo);
+        }
+        Map<String,List<MapResult.Geo>> map1 = new HashMap<>();
+        map1.put("items", m);
+        return map1;
     }
 
     public List<Integer> gen24Hours(int vtime){

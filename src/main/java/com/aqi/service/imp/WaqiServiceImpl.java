@@ -75,6 +75,9 @@ public class WaqiServiceImpl extends ServiceImpl<WaqiMapper, Waqi> implements Wa
                         if(byId == null){
                             noCityAreaService.save(noCityArea);
                         }
+                    }else{
+                        area.setUniKey(onlyPm.getKey());
+                        areaService.updateById(area);
                     }
                 }else{
                     QueryWrapper<City> queryWrapper = new QueryWrapper<>();

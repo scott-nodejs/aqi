@@ -1,7 +1,9 @@
 package com.aqi.service;
 
+import org.springframework.data.geo.Point;
 import org.springframework.data.redis.core.ZSetOperations;
 
+import java.util.Map;
 import java.util.Set;
 
 public interface RedisService {
@@ -15,4 +17,8 @@ public interface RedisService {
     Set<String> zget(int rank);
 
     Set<ZSetOperations.TypedTuple<Object>> zgetByScore(int rank, int type);
+
+    void addGeo(Map<String, Point> points);
+
+    String getLastestPoint(double lng, double lat);
 }

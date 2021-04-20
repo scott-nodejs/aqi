@@ -24,4 +24,8 @@ public interface CronService {
     void crongenRank();
 
     void cronInsterRank();
+
+    void cronAreaAll();
+
+    void cronDeleteWaqi();
 }

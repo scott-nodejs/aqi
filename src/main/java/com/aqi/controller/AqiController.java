@@ -3,6 +3,7 @@ package com.aqi.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.aqi.entity.City;
 import com.aqi.service.AqiService;
+import com.aqi.service.AreaService;
 import com.aqi.service.CityService;
 import com.aqi.service.CronService;
 import com.aqi.utils.ResultVoUtil;
@@ -18,6 +19,9 @@ public class AqiController {
 
     @Autowired
     private AqiService aqiService;
+
+    @Autowired
+    private AreaService areaService;
 
     @Autowired
     private CronService cronService;
@@ -110,6 +114,12 @@ public class AqiController {
     @GetMapping(value = "/genrank")
     public Object genrank(){
         cityService.getRank();
+        return 0;
+    }
+
+    @GetMapping(value = "/addPoint")
+    public Object addPoint(){
+        areaService.addPoint();
         return 0;
     }
 }

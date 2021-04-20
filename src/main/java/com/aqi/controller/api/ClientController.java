@@ -29,4 +29,9 @@ public class ClientController {
     public Object getRankByCityId(@RequestParam int type){
         return cityService.rankByClient(9, type);
     }
+
+    @GetMapping(value = "/getMap")
+    public Object getMap(){
+        return aqiService.getWaqiMap();
+    }
 }

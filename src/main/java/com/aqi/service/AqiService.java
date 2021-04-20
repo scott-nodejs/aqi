@@ -16,6 +16,8 @@ public interface AqiService extends IService<Aqi> {
 
     Object selectAqiByClient(int cityId, int type);
 
+    Object selectAqiByArea(int cityId, int type);
+
     List<AqiVo> selectAqiByCityId(int cityId, int type);
 
     CompareVo compareCity(List<Integer> ids, int type);
@@ -31,4 +33,8 @@ public interface AqiService extends IService<Aqi> {
     Object selectAreaByMouth(int cityId, int type, String vtime);
 
     int getFitAqi(int aqi, int type);
+
+    Object getMapAqi();
+
+    Object getWaqiMap();
 }

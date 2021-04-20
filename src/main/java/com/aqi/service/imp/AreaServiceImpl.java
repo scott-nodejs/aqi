@@ -15,6 +15,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +34,9 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
     
     @Autowired
     private CityService cityService;
+
+    @Autowired
+    private RedisService redisService;
 
     @Autowired
     private NoCityAreaService noCityAreaService;
@@ -189,10 +193,233 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
         noCityAreaService.removeByIds(uids);
     }
 
+    @Override
+    public void addAreaAqiAll(UrlEntity urlEntity) {
+        try{
+            long start = System.currentTimeMillis();
+            Area area = urlEntity.getArea();
+            if(area == null){
+                return;
+            }
+            String url = urlEntity.getUrl();
+            List<Integer> list = new ArrayList<>();
+            List<Integer> pm10s = new ArrayList<>();
+            List<Integer> so2s = new ArrayList<>();
+            List<Integer> no2s = new ArrayList<>();
+            List<Integer> o3s = new ArrayList<>();
+            gen(d,x);
+            HttpRequestConfig httpRequestConfig = new HttpRequestConfig();
+            httpRequestConfig.url(url);
+            HttpRequestResult result = HttpUtils.get(httpRequestConfig);
+            AllResult allResult = JSON.parseObject(result.getResponseText(), AllResult.class);
+            List<Map<String, String>> historic = allResult.getHistoric();
+            historic.forEach(m->{
+                if(m.get("n").equals("pm25")){
+                    String v = m.get("d");
+                    handle(v,list);
+                }
+                if(m.get("n").equals("pm10")){
+                    String v = m.get("d");
+                    handle(v,pm10s);
+                }
+                if(m.get("n").equals("so2")){
+                    String v = m.get("d");
+                    handle(v,so2s);
+                }
+                if(m.get("n").equals("no2")){
+                    String v = m.get("d");
+                    handle(v,no2s);
+                }
+                if(m.get("n").equals("o3")){
+                    String v = m.get("d");
+                    handle(v,o3s);
+                }
+            });
+            int time = allResult.getTime();
+            Aqi aqi = new Aqi();
+            aqi.setVtime(time);
+            aqi.setFtime(TimeUtil.convertMillisToString(Long.valueOf(time+"")));
+            String uuid = time + "_" + area.getUid();
+            int aqi1 = allResult.getAqi().equals("-") ? 0: (int) allResult.getAqi();
+            if(TimeUtil.getHour() <= time){
+                aqi.setUid(area.getUid());
+                aqi.setUuid(uuid);
+                aqi.setAqi(aqi1);
+                aqi.setPm25(list.size() > 0 ? String.valueOf(list.get(0)): "0");
+                aqi.setPm10(pm10s.size() > 0 ? String.valueOf(pm10s.get(0)): "0");
+                aqi.setSo2(so2s.size() > 0 ? String.valueOf(so2s.get(0)) : "0");
+                aqi.setNo2(no2s.size() > 0? String.valueOf(no2s.get(0)): "0");
+                aqi.setO3(o3s.size() > 0 ? String.valueOf(o3s.get(0)): "0");
+                aqiService.insertAqi(aqi);
+                log.info("地区解析全部信息的花费时间: " + (System.currentTimeMillis() - start) / 1000);
+            }
+        }catch (Exception e){
+            log.error("解析全部的aqi失败: ",e);
+        }
+    }
+
+    @Override
+    public void addPoint() {
+        List<Area> areas = baseMapper.selectList(new QueryWrapper<>());
+        Map<String, Point> pointMap = new HashMap<>();
+        areas.forEach(area -> {
+            pointMap.put(area.getUid()+"",new Point(area.getLon(), area.getLat()));
+        });
+        redisService.addGeo(pointMap);
+    }
+
+
+    Map<String,Integer> d = new HashMap<>();
+    Map<String,Integer> x = new HashMap<>();
+
+
+    private void gen(Map<String, Integer> d, Map<String, Integer> x) {
+        String dstr = "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z";
+        String xstr = "a b c d e f g h i j k l m n o p q r s t u v w x y z";
+        char[] dchars = dstr.toCharArray();
+        char[] xchars = xstr.toCharArray();
+        for(char c : dchars){
+            if(c >= 'A' && c <= 'Z'){
+                d.put(String.valueOf(c),(int)c - 64);
+            }
+        }
+        for(char c : xchars){
+            if(c >= 'a' && c <= 'z'){
+                x.put(String.valueOf(c),(int)c - 97);
+            }
+        }
+    }
+
 
     @Data
     class Count{
         private int cityId;
         private int count;
+    }
+
+    private void handle(String v, List<Integer> list) {
+        int c = 0;
+        char[] chars = v.toCharArray();
+        if(chars[0] >= '0' && chars[0] <= '9'){
+            for(int k = 1; k < ((int)chars[0] - 1); k++){
+                list.add(0);
+            }
+        }
+        for(int i=0; i < chars.length; i++){
+            char ch = chars[i];
+            char f;
+            if(ch >= '0' && ch <= '9'){
+                continue;
+            }
+            if(ch >= 'A' && ch <= 'Z'){
+                f = '-';
+                Integer data = d.get(String.valueOf(ch));
+                c = compute(c,data,f);
+                list.add(c);
+                StringBuilder sb1 = new StringBuilder();
+                if(i < chars.length - 1){
+                    sb1.append(chars[i + 1]);
+                }
+                if(i < chars.length - 2){
+                    sb1.append(chars[i + 2]);
+                }
+                if(i < chars.length - 3){
+                    sb1.append(chars[i + 3]);
+                }
+                if(sb1.length() > 0){
+                    char[] chars1 = sb1.toString().toCharArray();
+                    StringBuilder sb = new StringBuilder();
+                    for(char cha : chars1){
+                        if(cha >= '0' && cha <= '9'){
+                            sb.append(cha);
+                        }else{
+                            break;
+                        }
+                    }
+                    if(sb.length() > 0 && Integer.parseInt(sb.toString()) > 0){
+                        for(int j=0; j < Integer.parseInt(sb.toString()) -1; j++){
+                            list.add(0);
+                        }
+                    }
+                }
+            }
+            if(ch >= 'a' && ch <= 'z'){
+                f = '+';
+                Integer data = x.get(String.valueOf(ch));
+                c = compute(c,data,f);
+                list.add(c);
+                StringBuilder sb1 = new StringBuilder();
+                if(i < chars.length - 1){
+                    sb1.append(chars[i + 1]);
+                }
+                if(i < chars.length - 2){
+                    sb1.append(chars[i + 2]);
+                }
+                if(i < chars.length - 3){
+                    sb1.append(chars[i + 3]);
+                }
+                if(sb1.length() > 0){
+                    char[] chars1 = sb1.toString().toCharArray();
+                    StringBuilder sb = new StringBuilder();
+                    for(char cha : chars1){
+                        if(cha >= '0' && cha <= '9'){
+                            sb.append(cha);
+                        }else{
+                            break;
+                        }
+                    }
+                    if(sb.length() > 0 && Integer.parseInt(sb.toString()) > 0){
+                        for(int j=0; j < Integer.parseInt(sb.toString()) -1; j++){
+                            list.add(0);
+                        }
+                    }
+                }
+            }
+            if(ch == '!'){
+                f = '+';
+                StringBuilder sb = new StringBuilder();
+                if(i < chars.length - 1){
+                    merge(chars[i + 1], sb);
+                }
+                if(i < chars.length - 2){
+                    merge(chars[i + 2], sb);
+                }
+                if(i < chars.length - 3){
+                    merge(chars[i + 3], sb);
+                }
+                c = compute(c, Integer.parseInt(sb.toString()), f);
+                list.add(c);
+            }
+            if(ch == '$'){
+                f = '-';
+                StringBuilder sb = new StringBuilder();
+                if(i < chars.length - 1){
+                    merge(chars[i + 1], sb);
+                }
+                if(i < chars.length - 2){
+                    merge(chars[i + 2], sb);
+                }
+                if(i < chars.length - 3){
+                    merge(chars[i + 3], sb);
+                }
+                c = compute(c, Integer.parseInt(sb.toString()), f);
+                list.add(c);
+            }
+        }
+    }
+
+    private void merge(char ar, StringBuilder sb){
+        if(ar >= '0' && ar <= '9'){
+            sb.append(ar);
+        }
+    }
+
+    private int compute(int a, int b, char f){
+        if(f == '-'){
+            return a - b;
+        }else if(f == '+'){
+            return a + b;
+        }
+        return 0;
     }
 }

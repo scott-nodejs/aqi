@@ -34,7 +34,17 @@ public class LocationUtil {
         String district = addressComponent.getDistrict();
         String street = streetNumber.getStreet();
         String loc = district + " " + street;
-        locationMap.put("city", addressComponent.getCity());
+        String name = addressComponent.getCity();
+        if(name.equals("[]")){
+            int start = regeocode.getFormatted_address().indexOf("省");
+            int end = regeocode.getFormatted_address().indexOf("市");
+            if(start == -1){
+                name = regeocode.getFormatted_address().substring(0,end);
+            }else if(start != -1 && end != -1){
+                name = regeocode.getFormatted_address().substring(start+1,end);
+            }
+        }
+        locationMap.put("city", name);
         locationMap.put("loc", loc);
         return locationMap;
     }

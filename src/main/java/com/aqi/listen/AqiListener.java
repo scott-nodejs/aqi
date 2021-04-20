@@ -61,6 +61,8 @@ public class AqiListener {
 
     ExecutorService es = Executors.newFixedThreadPool(3);
 
+    CountDownLatch lock1 = new CountDownLatch(2);
+
     @PostConstruct
     public void init() {
         new Thread(new Runnable() {
@@ -146,17 +148,38 @@ public class AqiListener {
             while (true){
                 try{
                     Thread.sleep(1000);
+
                     es.execute(()->{
-                        processQueue(RabbitMqConfig.QUEUE_RAND_AQI, 1,
-                                null, new Consumer<UrlEntity>() {
-                                    @Override
-                                    public void accept(UrlEntity urlEntity) {
-                                        if(urlEntity.getType() == 2){
-                                            waqiService.consumerRand(urlEntity);
+                        try {
+                            processQueue(RabbitMqConfig.QUEUE_RAND_AQI, 1,
+                                    null, new Consumer<UrlEntity>() {
+                                        @Override
+                                        public void accept(UrlEntity urlEntity) {
+                                            if (urlEntity.getType() == 2) {
+                                                waqiService.consumerRand(urlEntity);
+                                            }
                                         }
-                                    }
-                                });
+                                    });
+                        }finally {
+                            lock1.countDown();
+                        }
                     });
+                    es.execute(()->{
+                        try{
+                            processQueue(RabbitMqConfig.QUEUE_AREA_ALL_AQI, 1,
+                                    null, new Consumer<UrlEntity>() {
+                                        @Override
+                                        public void accept(UrlEntity urlEntity) {
+                                            if(urlEntity.getType() == 3){
+                                                areaService.addAreaAqiAll(urlEntity);
+                                            }
+                                        }
+                                    });
+                        }finally {
+                            lock1.countDown();
+                        }
+                    });
+                    lock1.await();
                 }catch (Exception e){
                     logger.error("消费失败1: " , e);
                 }

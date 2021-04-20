@@ -15,6 +15,7 @@ public class Area {
     private double lat;
     private double lon;
     private String url;
+    private String uniKey;
     private int vtime;
     private int isUpdate;
     private int perantId;
