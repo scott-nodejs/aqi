@@ -19,6 +19,10 @@ public class GlobalConstant {
 
     public static final String LOCK_UPDATETIME = "lock_updatetime";
 
+    public static final String ALL_AREA = "ALL:AREA";
+
+    public static final String MER_HOUR_AQI = "MER:HOUR:AQI";
+
     public static final int a[][] = {{0,154,0,500},
                                      {155,404,510,1000},
                                      {405,654,1010,1500},

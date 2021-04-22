@@ -375,7 +375,8 @@ public class CronServiceImpl implements CronService {
     public void cronAreaAll() {
         String url = "http://mapidroid.aqicn.org/aqicn/json/android/";
         String fix = "/v11.json?cityID=Hebei%2F%25E5%25BC%25A0%25E5%25AE%25B6%25E5%258F%25A3%25E5%25B8%2582%2F%25E4%25BA%2594%25E9%2587%2591%25E5%25BA%2593&lang=zh&package=Asia&appv=132&appn=3.5&tz=28800000&metrics=1080,2211,3.0&wifi=&devid=6fb268749236975d";
-        List<Area> randAreaList = areaService.list();
+        long current = System.currentTimeMillis() / 1000;
+        List<Area> randAreaList = areaService.getArea(current);
         randAreaList.forEach(area->{
             String uniKey = area.getUniKey();
             if(uniKey != null){

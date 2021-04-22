@@ -8,9 +8,13 @@ import java.util.Set;
 
 public interface RedisService {
 
-    Object getString(String key);
+    String getString(String key);
 
-    void setString(String key, Object obj);
+    void setString(String key, String obj);
+
+    void hset(String key, String k, String v);
+
+    String hget(String key, String k);
 
     void zadd(String key, double score);
 

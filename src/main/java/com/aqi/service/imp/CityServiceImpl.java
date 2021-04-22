@@ -287,4 +287,14 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
         rankVo.setType(type);
         return rankVo;
     }
+
+    @Override
+    public Object cityQByClient(int type) {
+        QueryWrapper<City> queryWrapper = new QueryWrapper<>();
+        queryWrapper.like("city_type", type);
+        List<City> cities = baseMapper.selectList(queryWrapper);
+        Map<String,List<City>> map = new HashMap<>();
+        map.put("citys", cities);
+        return map;
+    }
 }

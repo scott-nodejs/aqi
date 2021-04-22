@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class RedisServiceImpl implements RedisService {
@@ -24,13 +25,24 @@ public class RedisServiceImpl implements RedisService {
     final String GEO_KEY = "cities:locs";
 
     @Override
-    public Object getString(String key) {
-        return redisTemplate.opsForValue().get(key);
+    public String getString(String key) {
+        return (String) redisTemplate.opsForValue().get(key);
     }
 
     @Override
-    public void setString(String key, Object obj) {
-        redisTemplate.opsForValue().set(key, obj);
+    public void setString(String key, String obj) {
+        redisTemplate.opsForValue().set(key, obj,7, TimeUnit.DAYS);
+    }
+
+    @Override
+    public void hset(String key, String k, String v) {
+        redisTemplate.opsForHash().put(key,k,v);
+        redisTemplate.expire(key, 1, TimeUnit.DAYS);
+    }
+
+    @Override
+    public String hget(String key, String k) {
+        return (String) redisTemplate.opsForHash().get(key, k);
     }
 
     @Override

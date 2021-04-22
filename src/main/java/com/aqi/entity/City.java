@@ -19,4 +19,6 @@ public class City {
     private int isUpdate;
     private String province;
     private String feature;
+    private String cityType;
+    private String cityThumb;
 }

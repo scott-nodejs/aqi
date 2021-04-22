@@ -235,7 +235,7 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
                     handle(v,o3s);
                 }
             });
-            int time = allResult.getTime();
+            int time = allResult.getTime() + 60 * 60;
             Aqi aqi = new Aqi();
             aqi.setVtime(time);
             aqi.setFtime(TimeUtil.convertMillisToString(Long.valueOf(time+"")));
@@ -251,7 +251,12 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
                 aqi.setNo2(no2s.size() > 0? String.valueOf(no2s.get(0)): "0");
                 aqi.setO3(o3s.size() > 0 ? String.valueOf(o3s.get(0)): "0");
                 aqiService.insertAqi(aqi);
-                log.info("地区解析全部信息的花费时间: " + (System.currentTimeMillis() - start) / 1000);
+                area.setVtime((int) (TimeUtil.getHour() + 60 * 60));
+                area.setIsUpdate(1);
+                this.updateById(area);
+                log.info("命中了===>: " + (System.currentTimeMillis() - start) / 1000);
+            }else{
+                log.info("没有命中==> 地区解析全部信息的花费时间: " + (System.currentTimeMillis() - start) / 1000);
             }
         }catch (Exception e){
             log.error("解析全部的aqi失败: ",e);

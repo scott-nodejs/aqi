@@ -1,6 +1,8 @@
 package com.aqi.service.imp;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.aqi.configer.exception.ResultException;
 import com.aqi.entity.*;
 import com.aqi.entity.api.ClientVo;
@@ -725,10 +727,30 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
 
     @Override
     public Object getWaqiMap() {
-        Map<Integer,Area> areas = areaService.list().stream().collect(Collectors.toMap(Area::getUid,area->area));
+        Map<Integer,Area> areas;
+        String allArea = redisService.getString(GlobalConstant.ALL_AREA);
+        if(allArea == null){
+            areas = areaService.list().stream().collect(Collectors.toMap(Area::getUid,area->area));
+            redisService.setString(GlobalConstant.ALL_AREA, JSONObject.toJSONString(areas));
+        }else{
+            areas = JSONObject.parseObject(allArea,  new TypeReference<Map<Integer, Area>>(){});
+        }
+
         QueryWrapper<Waqi> queryWrapper = new QueryWrapper<>();
-        queryWrapper.and(wrapper -> wrapper.eq("vtime", TimeUtil.getHour()).or().eq("vtime", TimeUtil.getHour(System.currentTimeMillis() - 60*60*1000)));
-        List<Waqi> list = waqiService.list(queryWrapper);
+        queryWrapper.eq("vtime", TimeUtil.getHour());
+        List<Waqi>   list = waqiService.list(queryWrapper);
+
+        List<Waqi> list1;
+        String before = redisService.hget(GlobalConstant.MER_HOUR_AQI, (TimeUtil.getHour() - 60 * 60)+"");
+        if(before == null){
+            QueryWrapper<Waqi> queryWrapper1 = new QueryWrapper<>();
+            queryWrapper1.eq("vtime", TimeUtil.getHour()- 60*60);
+            list1 = waqiService.list(queryWrapper1);
+            redisService.hset(GlobalConstant.MER_HOUR_AQI, (TimeUtil.getHour() - 60 * 60)+"", JSONObject.toJSONString(list1));
+        }else{
+            list1 = JSON.parseArray(before, Waqi.class);
+        }
+        list.addAll(list1);
         Map<String, Waqi> map = new HashMap<>();
         list.forEach(waqi -> {
             if(map.containsKey(waqi.getUid())){
