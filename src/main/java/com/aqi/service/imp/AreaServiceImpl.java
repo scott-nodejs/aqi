@@ -242,15 +242,17 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
             String uuid = time + "_" + area.getUid();
             int aqi1 = allResult.getAqi().equals("-") ? 0: (int) allResult.getAqi();
             if(TimeUtil.getHour() <= time){
-                aqi.setUid(area.getUid());
-                aqi.setUuid(uuid);
-                aqi.setAqi(aqi1);
-                aqi.setPm25(list.size() > 0 ? String.valueOf(list.get(0)): "0");
-                aqi.setPm10(pm10s.size() > 0 ? String.valueOf(pm10s.get(0)): "0");
-                aqi.setSo2(so2s.size() > 0 ? String.valueOf(so2s.get(0)) : "0");
-                aqi.setNo2(no2s.size() > 0? String.valueOf(no2s.get(0)): "0");
-                aqi.setO3(o3s.size() > 0 ? String.valueOf(o3s.get(0)): "0");
-                aqiService.insertAqi(aqi);
+                for(int i = 0; i < 5; i ++){
+                    aqi.setUid(area.getUid());
+                    aqi.setUuid(uuid);
+                    aqi.setAqi(aqi1);
+                    aqi.setPm25(list.size() > 0 ? String.valueOf(list.get(i)): "0");
+                    aqi.setPm10(pm10s.size() > 0 ? String.valueOf(pm10s.get(i)): "0");
+                    aqi.setSo2(so2s.size() > 0 ? String.valueOf(so2s.get(i)) : "0");
+                    aqi.setNo2(no2s.size() > 0? String.valueOf(no2s.get(i)): "0");
+                    aqi.setO3(o3s.size() > 0 ? String.valueOf(o3s.get(i)): "0");
+                    aqiService.insertAqi(aqi);
+                }
                 area.setVtime((int) (TimeUtil.getHour() + 60 * 60));
                 area.setIsUpdate(1);
                 this.updateById(area);

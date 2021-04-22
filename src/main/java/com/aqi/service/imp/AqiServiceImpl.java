@@ -753,10 +753,10 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
         list.addAll(list1);
         Map<String, Waqi> map = new HashMap<>();
         list.forEach(waqi -> {
-            if(map.containsKey(waqi.getUid())){
-                Waqi waqi1 = map.get(waqi.getUid());
+            if(map.containsKey(waqi.getUid()+"")){
+                Waqi waqi1 = map.get(waqi.getUid()+"");
                 if(waqi.getVtime() < waqi1.getVtime()){
-                    map.put(waqi.getUid()+"",waqi);
+                    map.put(waqi.getUid()+"",waqi1);
                 }
             }else{
                 map.put(waqi.getUid()+"",waqi);
