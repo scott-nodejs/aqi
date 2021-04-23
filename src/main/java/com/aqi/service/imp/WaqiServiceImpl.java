@@ -106,4 +106,9 @@ public class WaqiServiceImpl extends ServiceImpl<WaqiMapper, Waqi> implements Wa
             log.error("补充爬取: 可能出现了", e);
         }
     }
+
+    @Override
+    public List<Waqi> selectWaqiByLastest() {
+        return baseMapper.selectByLastest();
+    }
 }

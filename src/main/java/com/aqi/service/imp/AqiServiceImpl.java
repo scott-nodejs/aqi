@@ -727,47 +727,14 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
 
     @Override
     public Object getWaqiMap() {
-        Map<Integer,Area> areas;
-        String allArea = redisService.getString(GlobalConstant.ALL_AREA);
-        if(allArea == null){
-            areas = areaService.list().stream().collect(Collectors.toMap(Area::getUid,area->area));
-            redisService.setString(GlobalConstant.ALL_AREA, JSONObject.toJSONString(areas));
-        }else{
-            areas = JSONObject.parseObject(allArea,  new TypeReference<Map<Integer, Area>>(){});
-        }
-
-        QueryWrapper<Waqi> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("vtime", TimeUtil.getHour());
-        List<Waqi>   list = waqiService.list(queryWrapper);
-
-        List<Waqi> list1;
-        String before = redisService.hget(GlobalConstant.MER_HOUR_AQI, (TimeUtil.getHour() - 60 * 60)+"");
-        if(before == null){
-            QueryWrapper<Waqi> queryWrapper1 = new QueryWrapper<>();
-            queryWrapper1.eq("vtime", TimeUtil.getHour()- 60*60);
-            list1 = waqiService.list(queryWrapper1);
-            redisService.hset(GlobalConstant.MER_HOUR_AQI, (TimeUtil.getHour() - 60 * 60)+"", JSONObject.toJSONString(list1));
-        }else{
-            list1 = JSON.parseArray(before, Waqi.class);
-        }
-        list.addAll(list1);
-        Map<String, Waqi> map = new HashMap<>();
-        list.forEach(waqi -> {
-            if(map.containsKey(waqi.getUid()+"")){
-                Waqi waqi1 = map.get(waqi.getUid()+"");
-                if(waqi.getVtime() < waqi1.getVtime()){
-                    map.put(waqi.getUid()+"",waqi1);
-                }
-            }else{
-                map.put(waqi.getUid()+"",waqi);
-            }
-        });
-        Iterator<Map.Entry<String, Waqi>> iterator = map.entrySet().iterator();
+        Map<Integer,Area> areas = areaService.list().stream().collect(Collectors.toMap(Area::getUid,area->area));
+        Map<Integer, Waqi> map = waqiService.selectWaqiByLastest().stream().collect(Collectors.toMap(Waqi::getUid,waqi -> waqi));
+        Iterator<Map.Entry<Integer, Waqi>> iterator = map.entrySet().iterator();
         List<MapResult.Geo> m = new ArrayList<>();
         while (iterator.hasNext()){
-            Map.Entry<String, Waqi> next = iterator.next();
+            Map.Entry<Integer, Waqi> next = iterator.next();
             MapResult.Geo geo = new MapResult.Geo();
-            Area area = areas.get(Integer.parseInt(next.getKey()));
+            Area area = areas.get(next.getKey());
             if(area == null){
                 continue;
             }
@@ -776,7 +743,7 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
             g.add(area.getLon());
             geo.setG(g);
             geo.setA(String.valueOf(next.getValue().getAqi()));
-            geo.setX(next.getKey());
+            geo.setX(next.getKey()+"");
             String name = area.getName();
             int start = area.getName().indexOf("(");
             int end = area.getName().indexOf(")");

@@ -2,4 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aqi.mapper.aqi.WaqiMapper">
 
+    <select id="selectByLastest" resultType="com.aqi.entity.Waqi">
+        select * from tb_waqi where uuid in (select concat(v,'_',u) as uuid from (select MAX(vtime) as v,uid as u from tb_waqi GROUP BY uid) a);
+    </select>
 </mapper>

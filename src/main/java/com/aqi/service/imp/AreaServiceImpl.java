@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,6 +42,8 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
 
     @Autowired
     private NoCityAreaService noCityAreaService;
+
+    Executor ex = Executors.newFixedThreadPool(10);
 
     @Override
     public void insertArea(Area area) {
@@ -195,73 +199,75 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
 
     @Override
     public void addAreaAqiAll(UrlEntity urlEntity) {
-        try{
-            long start = System.currentTimeMillis();
-            Area area = urlEntity.getArea();
-            if(area == null){
-                return;
-            }
-            String url = urlEntity.getUrl();
-            List<Integer> list = new ArrayList<>();
-            List<Integer> pm10s = new ArrayList<>();
-            List<Integer> so2s = new ArrayList<>();
-            List<Integer> no2s = new ArrayList<>();
-            List<Integer> o3s = new ArrayList<>();
-            gen(d,x);
-            HttpRequestConfig httpRequestConfig = new HttpRequestConfig();
-            httpRequestConfig.url(url);
-            HttpRequestResult result = HttpUtils.get(httpRequestConfig);
-            AllResult allResult = JSON.parseObject(result.getResponseText(), AllResult.class);
-            List<Map<String, String>> historic = allResult.getHistoric();
-            historic.forEach(m->{
-                if(m.get("n").equals("pm25")){
-                    String v = m.get("d");
-                    handle(v,list);
+        ex.execute(()->{
+            try{
+                long start = System.currentTimeMillis();
+                Area area = urlEntity.getArea();
+                if(area == null){
+                    return;
                 }
-                if(m.get("n").equals("pm10")){
-                    String v = m.get("d");
-                    handle(v,pm10s);
-                }
-                if(m.get("n").equals("so2")){
-                    String v = m.get("d");
-                    handle(v,so2s);
-                }
-                if(m.get("n").equals("no2")){
-                    String v = m.get("d");
-                    handle(v,no2s);
-                }
-                if(m.get("n").equals("o3")){
-                    String v = m.get("d");
-                    handle(v,o3s);
-                }
-            });
-            int time = allResult.getTime() + 60 * 60;
-            Aqi aqi = new Aqi();
-            aqi.setVtime(time);
-            aqi.setFtime(TimeUtil.convertMillisToString(Long.valueOf(time+"")));
-            String uuid = time + "_" + area.getUid();
-            int aqi1 = allResult.getAqi().equals("-") ? 0: (int) allResult.getAqi();
-            if(TimeUtil.getHour() <= time){
-                aqi.setUid(area.getUid());
-                aqi.setUuid(uuid);
-                aqi.setAqi(aqi1);
-                aqi.setPm25(list.size() > 0 ? String.valueOf(list.get(0)): "0");
-                aqi.setPm10(pm10s.size() > 0 ? String.valueOf(pm10s.get(0)): "0");
-                aqi.setSo2(so2s.size() > 0 ? String.valueOf(so2s.get(0)) : "0");
-                aqi.setNo2(no2s.size() > 0? String.valueOf(no2s.get(0)): "0");
-                aqi.setO3(o3s.size() > 0 ? String.valueOf(o3s.get(0)): "0");
-                aqiService.insertAqi(aqi);
+                String url = urlEntity.getUrl();
+                List<Integer> list = new ArrayList<>();
+                List<Integer> pm10s = new ArrayList<>();
+                List<Integer> so2s = new ArrayList<>();
+                List<Integer> no2s = new ArrayList<>();
+                List<Integer> o3s = new ArrayList<>();
+                gen(d,x);
+                HttpRequestConfig httpRequestConfig = new HttpRequestConfig();
+                httpRequestConfig.url(url);
+                HttpRequestResult result = HttpUtils.get(httpRequestConfig);
+                AllResult allResult = JSON.parseObject(result.getResponseText(), AllResult.class);
+                List<Map<String, String>> historic = allResult.getHistoric();
+                historic.forEach(m->{
+                    if(m.get("n").equals("pm25")){
+                        String v = m.get("d");
+                        handle(v,list);
+                    }
+                    if(m.get("n").equals("pm10")){
+                        String v = m.get("d");
+                        handle(v,pm10s);
+                    }
+                    if(m.get("n").equals("so2")){
+                        String v = m.get("d");
+                        handle(v,so2s);
+                    }
+                    if(m.get("n").equals("no2")){
+                        String v = m.get("d");
+                        handle(v,no2s);
+                    }
+                    if(m.get("n").equals("o3")){
+                        String v = m.get("d");
+                        handle(v,o3s);
+                    }
+                });
+                int time = allResult.getTime() + 60 * 60;
+                Aqi aqi = new Aqi();
+                aqi.setVtime(time);
+                aqi.setFtime(TimeUtil.convertMillisToString(Long.valueOf(time+"")));
+                String uuid = time + "_" + area.getUid();
+                int aqi1 = allResult.getAqi().equals("-") ? 0: (int) allResult.getAqi();
+                if(TimeUtil.getHour() <= time){
+                    aqi.setUid(area.getUid());
+                    aqi.setUuid(uuid);
+                    aqi.setAqi(aqi1);
+                    aqi.setPm25(list.size() > 0 ? String.valueOf(list.get(0)): "0");
+                    aqi.setPm10(pm10s.size() > 0 ? String.valueOf(pm10s.get(0)): "0");
+                    aqi.setSo2(so2s.size() > 0 ? String.valueOf(so2s.get(0)) : "0");
+                    aqi.setNo2(no2s.size() > 0? String.valueOf(no2s.get(0)): "0");
+                    aqi.setO3(o3s.size() > 0 ? String.valueOf(o3s.get(0)): "0");
+                    aqiService.insertAqi(aqi);
 
-                area.setVtime((int) (TimeUtil.getHour() + 60 * 60));
-                area.setIsUpdate(1);
-                this.updateById(area);
-                log.info("命中了===>: " + (System.currentTimeMillis() - start) / 1000);
-            }else{
-                log.info("没有命中==> 地区解析全部信息的花费时间: " + (System.currentTimeMillis() - start) / 1000);
+                    area.setVtime((int) (TimeUtil.getHour() + 60 * 60));
+                    area.setIsUpdate(1);
+                    this.updateById(area);
+                    log.info("命中了===>: " + (System.currentTimeMillis() - start) / 1000);
+                }else{
+                    log.info("没有命中==> 地区解析全部信息的花费时间: " + (System.currentTimeMillis() - start) / 1000);
+                }
+            }catch (Exception e){
+                log.error("解析全部的aqi失败: ",e);
             }
-        }catch (Exception e){
-            log.error("解析全部的aqi失败: ",e);
-        }
+        });
     }
 
     @Override

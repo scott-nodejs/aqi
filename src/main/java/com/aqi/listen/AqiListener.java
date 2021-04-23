@@ -151,7 +151,7 @@ public class AqiListener {
 
                     es.execute(()->{
                         try {
-                            processQueue(RabbitMqConfig.QUEUE_RAND_AQI, 1,
+                            processQueue(RabbitMqConfig.QUEUE_RAND_AQI, 2,
                                     null, new Consumer<UrlEntity>() {
                                         @Override
                                         public void accept(UrlEntity urlEntity) {
@@ -166,7 +166,7 @@ public class AqiListener {
                     });
                     es.execute(()->{
                         try{
-                            processQueue(RabbitMqConfig.QUEUE_AREA_ALL_AQI, 1,
+                            processQueue(RabbitMqConfig.QUEUE_AREA_ALL_AQI, 2,
                                     null, new Consumer<UrlEntity>() {
                                         @Override
                                         public void accept(UrlEntity urlEntity) {
