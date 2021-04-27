@@ -243,7 +243,7 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
                 int time = allResult.getTime() + 60 * 60;
                 Aqi aqi = new Aqi();
                 aqi.setVtime(time);
-                aqi.setFtime(TimeUtil.convertMillisToString(Long.valueOf(time+"")));
+                aqi.setFtime(TimeUtil.convertMillisToString(Long.valueOf(time+"000")));
                 String uuid = time + "_" + area.getUid();
                 int aqi1 = allResult.getAqi().equals("-") ? 0: (int) allResult.getAqi();
                 if(TimeUtil.getHour() <= time){

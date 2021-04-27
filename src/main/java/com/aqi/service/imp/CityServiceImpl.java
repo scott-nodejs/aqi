@@ -60,7 +60,15 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
     public City getCityByUid(int uid) {
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq("uid",uid);
-        return baseMapper.selectOne(queryWrapper);
+        City city = baseMapper.selectOne(queryWrapper);
+        String name = city.getCity();
+        int s = name.indexOf("(");
+        int e = name.indexOf(")");
+        if(s != -1 && e != -1){
+            name = name.substring(s+1, e);
+        }
+        city.setCity(name);
+        return city;
     }
 
     @Override

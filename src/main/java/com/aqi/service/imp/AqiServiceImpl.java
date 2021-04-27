@@ -727,8 +727,18 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
 
     @Override
     public Object getWaqiMap() {
-        Map<Integer,Area> areas = areaService.list().stream().collect(Collectors.toMap(Area::getUid,area->area));
+        Map<Integer,Area> areas;
+        long s = System.currentTimeMillis();
+        String allArea = redisService.getString(GlobalConstant.ALL_AREA);
+        if(allArea == null){
+            areas = areaService.list().stream().collect(Collectors.toMap(Area::getUid,area->area));
+            redisService.setString(GlobalConstant.ALL_AREA, JSONObject.toJSONString(areas));
+        }else{
+            areas = JSONObject.parseObject(allArea,  new TypeReference<Map<Integer, Area>>(){});
+        }
+        System.out.println((System.currentTimeMillis() - s)/1000);
         Map<Integer, Waqi> map = waqiService.selectWaqiByLastest().stream().collect(Collectors.toMap(Waqi::getUid,waqi -> waqi));
+
         Iterator<Map.Entry<Integer, Waqi>> iterator = map.entrySet().iterator();
         List<MapResult.Geo> m = new ArrayList<>();
         while (iterator.hasNext()){
