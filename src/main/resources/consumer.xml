@@ -12,7 +12,7 @@
     <dubbo:registry address="zookeeper://39.105.231.100:2181" />
 
     <!-- 生成远程服务代理，可以和本地bean一样使用demoService -->
-    <dubbo:reference id="tradeService" interface="com.cityq.TradeServiceApi" />
+    <dubbo:reference id="tradeService" interface="com.cityq.TradeServiceApi" check="false"/>
 
-    <dubbo:reference id="raidersService" interface="com.cityq.RaiderServiceApi" />
+    <dubbo:reference id="raidersService" interface="com.cityq.RaiderServiceApi" check="false" />
 </beans>

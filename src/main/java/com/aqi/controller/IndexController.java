@@ -32,4 +32,9 @@ public class IndexController {
     public String rank(Model model) {
         return "rank";
     }
+
+    @RequestMapping("/map")
+    public String map(Model model) {
+        return "map";
+    }
 }
