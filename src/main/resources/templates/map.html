@@ -4,7 +4,7 @@
     <meta charset="utf-8"><link rel="icon" href="https://jscdn.com.cn/highcharts/images/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        #mapid { height: 500px; }
+        #mapid { height: 800px; }
         .list-group-horizontal .list-group-item {
             display: inline-block;
         }
@@ -26,72 +26,158 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
           integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
           crossorigin=""/>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.js"></script>
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
             integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
             crossorigin=""></script>
+    <script src="js/leaflet.canvas-markers.js"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-select/1.14.0-beta/css/bootstrap-select.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap-select/1.14.0-beta/js/bootstrap-select.min.js"></script>
 </head>
 <body>
    <div class="row" th:insert="~{public :: public_top(4)}"></div>
-   <div th:insert="~{public :: public_city}"></div>
-   <div id="mapid"></div>
+   <div class="row" style="padding-top:10px" th:fragment="public_city">
+       <div class="col-md-10 text-center">
+           <div class="list-group list-group-horizontal" id="city">
+               <a href="#" id="39.954592,116.468117" class="list-group-item active">北京</a>
+               <a href="#" id="31.2047372,121.4489017" class="list-group-item">上海</a>
+               <a href="#" id="22.543099,114.057868" class="list-group-item">深圳</a>
+               <a href="#" id="23.141191,113.258374" class="list-group-item">广州</a>
+               <a href="#" id = "29.56301,106.551557" class="list-group-item">重庆</a>
+               <a href="#" id = "30.274085:120.15507" class="list-group-item">杭州</a>
+               <a href="#" id = "34.341568,108.940175" class="list-group-item">西安</a>
+               <a href="#" id = "36.067082,120.38264" class="list-group-item">青岛</a>
+           </div>
+       </div>
+       <div class="col-md-2" style="padding-right:10px">
+           <div class="input-group">
+               <input type="text" class="form-control" id="keyword" placeholder="城市搜索">
+               <span class="input-group-btn">
+                        <button class="btn btn-group" id="destroy" onclick="search()" type="button">搜索</button>
+                    </span>
+           </div>
+       </div>
+   </div>
+   <div class="row">
+       <div id="mapid" class="col-md-12"></div>
+   </div>
 </body>
 <script>
-    var mymap = L.map('mapid').setView([51.5, -0.09], 13);
-
-    L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
-        maxZoom: 18,
-        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, ' +
-            'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-        id: 'mapbox/streets-v11',
-        tileSize: 512,
-        zoomOffset: -1
-    }).addTo(mymap);
-
-
-    const myCustomColour = '#583470'
-
-    const markerHtmlStyles = `
-              background-color: ${myCustomColour};
-              width: 4rem;
-              height: 4rem;
-              display: block;
-              left: -1.5rem;
-              top: -1.5rem;
-              position: relative;
-              border-radius: 3rem 3rem 0;
-              transform: rotate(45deg);
-              border: 1px solid #FFFFFF;
-              color: #FFFFFF`
-
-    const icon = L.divIcon({
-        className: "my-custom-pin",
-        iconAnchor: [0, 24],
-        labelAnchor: [-6, 0],
-        popupAnchor: [0, -36],
-        html: `<div><span style="${markerHtmlStyles}" ></span><span></span></div>`
+    $(function () {
+        init(39.954592,116.468117);
+        $('#city a').on('click', function (e) {
+            e.preventDefault()
+            $('#keyword').val('');
+            $(this).siblings('a').removeClass('active');  // 删除其兄弟元素的样式
+            $(this).addClass('active');
+            let v = $(this).attr("id");
+            let vs = v.split(",");
+            init(vs[0],vs[1]);
+        })
     })
 
-    var marker = L.marker([51.5, -0.09], {
-        icon: icon
-    }).addTo(mymap);
+    function init(lan,lon) {
+        let mymap = L.map('mapid', {
+            maxZoom: 18,
+            minZoom: 4,
+            center: [lan,lon],
+            zoom: 10,
+            preferCanvas: true //使用canvas模式渲染矢量图形
+        });
 
-    this.mymap.on("zoomend", e => {
-        //获取当前放大或者缩小的等级
-        map_drag();
-    });
+        L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(mymap);
 
-    this.mymap.on("moveend", function (e) {
-        map_drag();
-    });
+        var ciLayer = L.canvasIconLayer({}).addTo(mymap);
 
-    function map_drag() {
-        //左下角坐标（西南方）
-        var leftdown = mymap.getBounds().getSouthWest().lat + "," + mymap.getBounds().getSouthWest().lng;
+        request(mymap,ciLayer);
+
+
+
+        mymap.on("zoomend", e => {
+            //获取当前放大或者缩小的等级
+            request(mymap,ciLayer);
+        });
+
+        mymap.on("moveend", function (e) {
+            request(mymap,ciLayer);
+        });
+    }
+
+    function map_drag(e) {
+        let zoom = e.target.getZoom();
+        console.log(zoom)
+        request(zoom);
+    }
+
+    function request(mymap,ciLayer) {
+        let lng = mymap.getBounds().getSouthWest().lng;
+        let lat = mymap.getBounds().getSouthWest().lat;
+        var leftdown =  lat + "," + lng;
+        console.log(mymap.getBounds().getSouthWest().lng+","+mymap.getBounds().getSouthWest().lat)
         console.log(leftdown)
         //右上角坐标（东北方向）
-        var rightdown = mymap.getBounds().getNorthEast().lat + "," + mymap.getBounds().getNorthEast().lng;
+        let lng1 = mymap.getBounds().getNorthEast().lng;
+        let lat1 = mymap.getBounds().getNorthEast().lat;
+        var rightdown = lat1 + "," + lng1;
         console.log(rightdown)
+        $.ajax({
+            url:'/getMap?start='+leftdown+'&end='+rightdown,//请求数据的地址
+            type : "get",
+            async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
+            data : {},
+            dataType : "json", //返回数据形式为json
+            success:function(result){
+                let data = result.items;
+                let markers = [];
+                for (i = 0; i < data.length; i++) {
+                    obj = data[i];
+                    let marker = addMarker1(obj['g'][0],obj['g'][1],obj['a'])
+                    markers.push(marker)
+                }
+                ciLayer.addLayers(markers);
+            },
+            error:function(e){
+            }
+        });
     }
+
+    function addMarker1(lat, lng,aqi) {
+        var icon = L.icon({
+            iconUrl: getColor(aqi),
+            iconSize: [44, 34],
+            iconAnchor: [12, 20],
+
+            //添加文字
+            text:aqi==0?'-':aqi.toString(),
+            textAnchor: [0, 0],
+            textFont:'12px bold',       //设置字体大小和样式
+            textFillStyle:'#FFFFFF'     //设置字体颜色
+        });
+
+        var marker = L.marker([lat, lng], {
+            icon: icon
+        });
+
+        return marker;
+    }
+
+    function getColor(aqi){
+        if(aqi > 0 && aqi <= 50){
+            return './img/good-marker.png';
+        }else if(aqi > 50 && aqi <= 100){
+            return './img/so-marker.png';
+        }else if(aqi > 100 && aqi <= 150){
+            return './img/light-marker.png';
+        }else if(aqi > 150 && aqi <= 200){
+            return './img/bad-marker.png';
+        }else if(aqi > 200 && aqi <= 300){
+            return './img/bader-marker.png';
+        }else if(aqi == 0){
+            return './img/gray-marker.png';
+        }
+        return './img/badest-marker.png';
+    }
+
 
 </script>
 </html>

@@ -122,4 +122,9 @@ public class AqiController {
         areaService.addPoint();
         return 0;
     }
+
+    @GetMapping(value = "/getMap")
+    public Object getMap(String start, String end){
+        return aqiService.getMapAqi(start, end);
+    }
 }

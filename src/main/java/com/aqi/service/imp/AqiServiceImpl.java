@@ -699,11 +699,12 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
     }
 
     @Override
-    public Object getMapAqi() {
+    public Object getMapAqi(String start, String end) {
         try{
-            String url = "http://mapi3.aqicn.org/mapi/?bounds=(3.311143000000,103.073730000000),(54.098060000000,126.804199000000))&zoom=11.0&v=2&sid=174234829&lang=zh&package=Asia&appv=132&appn=3.5&tz=28800000&metrics=1080,2211,3.0&wifi=&devid=6fb268749236975d";
+            String url = "http://mapi3.aqicn.org/mapi/?bounds=(%s),(%s))&zoom=11.0&v=2&sid=174234829&lang=zh&package=Asia&appv=132&appn=3.5&tz=28800000&metrics=1080,2211,3.0&wifi=&devid=6fb268749236975d";
+            String urlFormat = String.format(url,start,end);
             HttpRequestConfig config = new HttpRequestConfig();
-            config.url(url);
+            config.url(urlFormat);
             HttpRequestResult result = HttpUtils.get(config);
             MapResult mapResult = JSON.parseObject(result.getResponseText(), MapResult.class);
             List<MapResult.Geo> m = mapResult.getM();

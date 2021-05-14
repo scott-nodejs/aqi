@@ -34,7 +34,7 @@ public interface AqiService extends IService<Aqi> {
 
     int getFitAqi(int aqi, int type);
 
-    Object getMapAqi();
+    Object getMapAqi(String start, String end);
 
     Object getWaqiMap();
 }
