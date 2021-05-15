@@ -24,6 +24,7 @@ public interface AqiService extends IService<Aqi> {
 
     Integer selectAqiByCityName(String name);
 
+
     CompareVo compareCityByName(List<String> names, int type);
 
     AreaAqiResponseVo selectAreaAqiByCityId(int cityId, int type, int vtime);

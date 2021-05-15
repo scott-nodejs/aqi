@@ -45,6 +45,11 @@ public class AqiController {
         return ResultVoUtil.success("获取成功", aqiService.selectAqiByCityName(name));
     }
 
+    @GetMapping(value = "/getCityByCityName/{name}")
+    public Object getCityByCityName(@PathVariable String name){
+        return ResultVoUtil.success("获取成功", cityService.getCityByName(name));
+    }
+
     @PostMapping(value = "/compareCitys/{type}")
     public Object compareCitys(String names, @PathVariable int type){
         List<String> parse = (List<String>) JSONObject.parse(names);

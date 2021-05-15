@@ -4,7 +4,18 @@
     <meta charset="utf-8"><link rel="icon" href="https://jscdn.com.cn/highcharts/images/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        #mapid { height: 800px; }
+        body {
+            padding: 0;
+            margin: 0;
+        }
+        /*#mapid { height: 800px; }*/
+        #mapid{
+            position: relative;
+            top: 0;
+            bottom: 0;
+            height: 100%;
+            width: 100%;
+        }
         .list-group-horizontal .list-group-item {
             display: inline-block;
         }
@@ -44,7 +55,7 @@
                <a href="#" id="22.543099,114.057868" class="list-group-item">深圳</a>
                <a href="#" id="23.141191,113.258374" class="list-group-item">广州</a>
                <a href="#" id = "29.56301,106.551557" class="list-group-item">重庆</a>
-               <a href="#" id = "30.274085:120.15507" class="list-group-item">杭州</a>
+               <a href="#" id = "30.274085,120.15507" class="list-group-item">杭州</a>
                <a href="#" id = "34.341568,108.940175" class="list-group-item">西安</a>
                <a href="#" id = "36.067082,120.38264" class="list-group-item">青岛</a>
            </div>
@@ -58,13 +69,15 @@
            </div>
        </div>
    </div>
-   <div class="row">
+   <div class="row" style="height: 600px">
        <div id="mapid" class="col-md-12"></div>
    </div>
 </body>
 <script>
+    let mymap = L.map('mapid');
     $(function () {
-        init(39.954592,116.468117);
+        $(".selectpicker").selectpicker('val','2');
+        init(mymap,39.954592,116.468117);
         $('#city a').on('click', function (e) {
             e.preventDefault()
             $('#keyword').val('');
@@ -72,18 +85,43 @@
             $(this).addClass('active');
             let v = $(this).attr("id");
             let vs = v.split(",");
-            init(vs[0],vs[1]);
+            init(mymap,vs[0],vs[1]);
         })
     })
 
-    function init(lan,lon) {
-        let mymap = L.map('mapid', {
-            maxZoom: 18,
-            minZoom: 4,
-            center: [lan,lon],
-            zoom: 10,
-            preferCanvas: true //使用canvas模式渲染矢量图形
+    function search() {
+        let selected = $('.selectpicker option:selected').val();
+        let city = $('#keyword').val();
+        $.ajax({
+            url:'/getCityByCityName/'+city,//请求数据的地址
+            type : "get",
+            async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
+            data : {},
+            dataType : "json",        //返回数据形式为json
+            success:function(result){
+                // $('#keyword').val("");
+                if(result.code == 200){
+                    init(mymap,result.data['lat'],result.data['lon'])
+                }else{
+                    console.log(result.msg);
+                    alert(result.msg);
+                }
+            },
+            error:function(e){
+                console.log(e)
+            }
         });
+    }
+
+    function init(mymap,lan,lon) {
+        // mymap.setView({
+        //     maxZoom: 18,
+        //     minZoom: 4,
+        //     center: [lan,lon],
+        //     zoom: 10,
+        //     preferCanvas: true //使用canvas模式渲染矢量图形
+        // });
+        mymap.setView([lan,lon], 10, { animation: true });
 
         L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(mymap);
 
