@@ -2,6 +2,7 @@ package com.aqi.controller.api;
 
 import com.aqi.service.AqiService;
 import com.aqi.service.CityService;
+import com.aqi.utils.ResultVoUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,5 +34,10 @@ public class ClientController {
     @GetMapping(value = "/getMap")
     public Object getMap(){
         return aqiService.getWaqiMap();
+    }
+
+    @GetMapping(value = "/getCityByCityName/{name}")
+    public Object getCityByCityName(@PathVariable String name){
+        return cityService.getCityByName(name);
     }
 }

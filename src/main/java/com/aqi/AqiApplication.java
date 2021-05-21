@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableTransactionManagement
 @EnableAsync
 @EnableScheduling
-//@ImportResource({"classpath:consumer.xml"})
+@ImportResource({"classpath:consumer.xml"})
 public class AqiApplication {
 
     public static void main(String[] args) {

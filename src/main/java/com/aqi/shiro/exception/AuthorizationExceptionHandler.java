@@ -1,9 +1,9 @@
 package com.aqi.shiro.exception;
 
-import com.server.apptalk.common.enums.ResultEnum;
-import com.server.apptalk.utils.ResultVoUtil;
-import com.server.apptalk.utils.SpringContextUtil;
-import com.server.apptalk.vo.ResultVo;
+import com.aqi.configer.exception.ResultEnum;
+import com.aqi.configer.exception.ResultVo;
+import com.aqi.utils.ResultVoUtil;
+import com.aqi.utils.SpringContextUtil;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.springframework.core.annotation.Order;
