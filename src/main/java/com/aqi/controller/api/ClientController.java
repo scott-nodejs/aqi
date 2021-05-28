@@ -28,11 +28,12 @@ public class ClientController {
 
     @GetMapping(value = "/getRankByCity")
     public Object getRankByCityId(@RequestParam int type){
-        return cityService.rankByClient(9, type);
+        return cityService.rankByClient(300, type);
     }
 
     @GetMapping(value = "/getMap")
     public Object getMap(){
+//        return aqiService.getMapAqi("3.311143000000,103.073730000000","54.098060000000,126.804199000000");
         return aqiService.getWaqiMap();
     }
 

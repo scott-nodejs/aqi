@@ -49,13 +49,13 @@ public class keywordTask {
     /**
      * 随机爬取附近节点的pm2.5
      */
-    @Scheduled(cron = "0 0/10 * * * ?")
-    public void rand(){
-        cronService.onlyPm25();
-    }
+//    @Scheduled(cron = "0 0/10 * * * ?")
+//    public void rand(){
+//        cronService.onlyPm25();
+//    }
 
     /**
-     * 随机爬取附近节点的pm2.5
+     * 根据app解析pm2.5
      */
     @Scheduled(cron = "0 0/5 * * * ?")
     public void all(){

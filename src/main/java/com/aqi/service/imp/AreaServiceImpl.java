@@ -43,6 +43,9 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
     @Autowired
     private NoCityAreaService noCityAreaService;
 
+    @Autowired
+    private WaqiService waqiService;
+
     Executor ex = Executors.newFixedThreadPool(10);
 
     @Override
@@ -238,6 +241,20 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
                     if(m.get("n").equals("o3")){
                         String v = m.get("d");
                         handle(v,o3s);
+                    }
+                });
+                List<AllResult.Near> nearest = allResult.getNearest();
+                nearest.forEach(near -> {
+                    Waqi waqi = new Waqi();
+                    waqi.setUid(Integer.parseInt(near.getX()));
+                    String uuid = near.getT()+"_"+near.getX();
+                    waqi.setUuid(uuid);
+                    waqi.setAqi(Integer.parseInt(near.getV()));
+                    waqi.setVtime(near.getT());
+                    try{
+                        waqiService.save(waqi);
+                    }catch (Exception e){
+
                     }
                 });
                 int time = allResult.getTime() + 60 * 60;
