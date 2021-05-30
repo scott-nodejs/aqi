@@ -27,8 +27,8 @@ public class ClientController {
     }
 
     @GetMapping(value = "/getRankByCity")
-    public Object getRankByCityId(@RequestParam int type){
-        return cityService.rankByClient(300, type);
+    public Object getRankByCityId(@RequestParam int type, @RequestParam int page){
+        return cityService.rankByClient(20, type, page);
     }
 
     @GetMapping(value = "/getMap")

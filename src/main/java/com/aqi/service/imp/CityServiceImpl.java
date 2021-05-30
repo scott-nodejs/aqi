@@ -264,11 +264,30 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
     }
 
     @Override
-    public RankVo rankByClient(int rank, int type) {
+    public RankVo rankByClient(int rank, int type, int page) {
         List<City> citys = new ArrayList<>();
         List<Map<String,Object>> y = new ArrayList<>();
-        Set<ZSetOperations.TypedTuple<Object>> typedTuples = redisService.zgetByScore(rank,type);;
-        Iterator<ZSetOperations.TypedTuple<Object>> iterator = typedTuples.iterator();
+        Set<ZSetOperations.TypedTuple<Object>> typedTuples = redisService.zgetByScore(300, type);;
+        List<ZSetOperations.TypedTuple<Object>> arrayList = new ArrayList(typedTuples);
+        int total = (arrayList.size() % rank) + 1;
+        boolean more = false;
+        if(page < total){
+            more = true;
+            arrayList = arrayList.subList((page-1)*rank, page*rank);
+
+        }else if(page == total){
+            more = false;
+            arrayList = arrayList.subList((page-1)*rank,arrayList.size());
+        }else{
+            more = false;
+            RankVo rankVo = new RankVo();
+            rankVo.setCitys(new ArrayList<>());
+            rankVo.setRanks(new ArrayList<>());
+            rankVo.setType(type);
+            rankVo.setMore(more);
+            return rankVo;
+        }
+        Iterator<ZSetOperations.TypedTuple<Object>> iterator = arrayList.iterator();
         while (iterator.hasNext()){
             ZSetOperations.TypedTuple<Object> next = iterator.next();
             String uid = (String) next.getValue();
@@ -293,6 +312,7 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
         rankVo.setCitys(citys);
         rankVo.setRanks(y);
         rankVo.setType(type);
+        rankVo.setMore(more);
         return rankVo;
     }
 

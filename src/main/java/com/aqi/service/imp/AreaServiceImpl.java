@@ -247,14 +247,13 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
                 nearest.forEach(near -> {
                     Waqi waqi = new Waqi();
                     waqi.setUid(Integer.parseInt(near.getX()));
-                    String uuid = near.getT()+"_"+near.getX();
+                    String uuid = near.getT() + "_" + near.getX();
                     waqi.setUuid(uuid);
-                    waqi.setAqi(Integer.parseInt(near.getV()));
+                    waqi.setAqi("-".equals(near.getV())?0:Integer.parseInt(near.getV()));
                     waqi.setVtime(near.getT());
                     try{
                         waqiService.save(waqi);
                     }catch (Exception e){
-
                     }
                 });
                 int time = allResult.getTime() + 60 * 60;
@@ -273,13 +272,12 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
                     aqi.setNo2(no2s.size() > 0? String.valueOf(no2s.get(0)): "0");
                     aqi.setO3(o3s.size() > 0 ? String.valueOf(o3s.get(0)): "0");
                     aqiService.insertAqi(aqi);
-
                     area.setVtime((int) (TimeUtil.getHour() + 60 * 60));
                     area.setIsUpdate(1);
                     this.updateById(area);
-                    log.info("命中了===>: " + (System.currentTimeMillis() - start) / 1000);
+                    log.info("命中了===>: " + (System.currentTimeMillis() - start) / 1000 +"扫描城市: " + cityService.getCityByUid(urlEntity.getArea().getPerantId()).getCity());
                 }else{
-                    log.info("没有命中==> 地区解析全部信息的花费时间: " + (System.currentTimeMillis() - start) / 1000);
+                    log.info("没有命中==> 地区解析全部信息的花费时间: " + (System.currentTimeMillis() - start) / 1000 + "扫描城市: " + cityService.getCityByUid(urlEntity.getArea().getPerantId()).getCity());
                 }
             }catch (Exception e){
                 log.error("解析全部的aqi失败: ",e);
@@ -297,10 +295,8 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
         redisService.addGeo(pointMap);
     }
 
-
     Map<String,Integer> d = new HashMap<>();
     Map<String,Integer> x = new HashMap<>();
-
 
     private void gen(Map<String, Integer> d, Map<String, Integer> x) {
         String dstr = "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z";

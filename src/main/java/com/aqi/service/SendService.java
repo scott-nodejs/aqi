@@ -11,5 +11,7 @@ public interface SendService {
 
     boolean sendCity(String key, UrlEntity urlEntity, long times);
 
+    boolean sendPriorityMessage(String key, UrlEntity urlEntity, long times,int priority);
+
     boolean sendAqiConsumer(String key, ConsumerAqi consumerAqi);
 }

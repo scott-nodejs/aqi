@@ -21,4 +21,5 @@ public class City {
     private String feature;
     private String cityType;
     private String cityThumb;
+    private Integer priority;
 }

@@ -8,6 +8,7 @@ import java.util.Map;
 
 @Data
 public class RankVo {
+    private boolean more;
     private int type;
     private List<City> citys;
     private List<Map<String,Object>> ranks;

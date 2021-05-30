@@ -21,6 +21,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @EnableRabbit
 @Configuration
 public class RabbitMqConfig {
@@ -125,8 +128,14 @@ public class RabbitMqConfig {
     @Bean
     public Queue queueAreaAll() {
         return new Queue(QUEUE_AREA_ALL_AQI, true); //队列持久
-
     }
+
+//    @Bean
+//    public Queue queueAreaAll() {
+//        Map<String, Object> args= new HashMap<>();
+//        args.put("x-max-priority", 5);
+//        return new Queue(QUEUE_AREA_ALL_AQI, true, false,false, args); //队列持久
+//    }
 
 
     /**

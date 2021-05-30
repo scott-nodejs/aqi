@@ -64,6 +64,19 @@ public class SendServiceImpl implements SendService {
     }
 
     @Override
+    public boolean sendPriorityMessage(String key, UrlEntity urlEntity, long times, int priority) {
+        template.convertAndSend(RabbitMqConfig.EXCHANGE, key, urlEntity, new MessagePostProcessor() {
+            @Override
+            public Message postProcessMessage(Message message) throws AmqpException {
+                message.getMessageProperties().setPriority(priority);
+                message.getMessageProperties().setExpiration(String.valueOf(times*1000));
+                return message;
+            }
+        });
+        return true;
+    }
+
+    @Override
     public boolean sendAqiConsumer(String key, ConsumerAqi consumerAqi) {
         template.convertAndSend(RabbitMqConfig.EXCHANGE, key, consumerAqi);
         return true;

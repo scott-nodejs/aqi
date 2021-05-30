@@ -36,7 +36,7 @@ public interface CityService extends IService<City> {
 
     Map<String, Object> rank(int rank, int type);
 
-    RankVo rankByClient(int rank, int type);
+    RankVo rankByClient(int rank, int type, int page);
 
     Object cityQByClient(int type);
 }

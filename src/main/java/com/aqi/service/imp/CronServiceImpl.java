@@ -380,6 +380,7 @@ public class CronServiceImpl implements CronService {
         randAreaList.forEach(area->{
             String uniKey = area.getUniKey();
             if(uniKey != null){
+                City city = cityService.getCityByUid(area.getPerantId());
                 String urlFormat = url + uniKey + fix;
                 log.info("地区信息(全)的链接: " + urlFormat);
                 UrlEntity urlEntity = new UrlEntity();
@@ -387,6 +388,7 @@ public class CronServiceImpl implements CronService {
                 urlEntity.setUrl(urlFormat);
                 urlEntity.setType(3);
                 urlEntity.setVtime(TimeUtil.getHour());
+                int priority = city.getPriority() == null ? 0 : city.getPriority();
                 sendService.sendCity(RabbitMqConfig.ROUTINGKEY_AREA_ALL_AQI,urlEntity,5*60);
             }
         });
