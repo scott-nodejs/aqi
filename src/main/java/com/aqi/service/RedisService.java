@@ -20,6 +20,10 @@ public interface RedisService {
 
     Set<String> zget(int rank);
 
+    boolean expire(String key, long time);
+
+    public void del(String... key);
+
     Set<ZSetOperations.TypedTuple<Object>> zgetByScore(int rank, int type);
 
     void addGeo(Map<String, Point> points);
