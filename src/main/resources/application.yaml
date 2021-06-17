@@ -6,7 +6,7 @@ spring:
   application:
     name: aqi
   profiles:
-    active: dev
+    active: prod
 
 
 

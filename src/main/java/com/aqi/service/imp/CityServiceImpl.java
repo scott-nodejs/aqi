@@ -210,10 +210,17 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
             es.execute(()->{
                 QueryWrapper<Aqi> queryWrapper = new QueryWrapper<>();
                 queryWrapper.eq("uid", Integer.parseInt(uid));
+                queryWrapper.orderByDesc("vtime");
                 queryWrapper.between("vtime", start, end);
                 List<Aqi> aqis = aqiService.list(queryWrapper);
                 int score = computerService.computeByRank(aqis, 2);
-                redisService.zadd(uid, score*1.0);
+                String key;
+                if(aqis != null && aqis.size() > 0){
+                    key = uid + ":" + aqis.get(0).getAqi();
+                }else{
+                    key = uid + ":0";
+                }
+                redisService.zadd(key, score*1.0);
             });
         });
     }
@@ -227,7 +234,12 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
         while (iterator.hasNext()){
             ZSetOperations.TypedTuple<Object> next = iterator.next();
             String uid = (String) next.getValue();
-            uids.add(uid);
+            if(uid.contains(":")){
+                String s = uid.split(":")[0];
+                uids.add(s);
+            }else {
+                uids.add(uid);
+            }
             double score = next.getScore();
             Map<String, Object> map = new HashMap<>();
             if(type == 0){
@@ -290,7 +302,16 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
         Iterator<ZSetOperations.TypedTuple<Object>> iterator = arrayList.iterator();
         while (iterator.hasNext()){
             ZSetOperations.TypedTuple<Object> next = iterator.next();
-            String uid = (String) next.getValue();
+            String uid = null;
+            String value = (String) next.getValue();
+            String aqi = null;
+            if(value.contains(":")){
+                uid = value.split(":")[0];
+                aqi = value.split(":")[1];
+            }else{
+                uid = value;
+                aqi = "0";
+            }
             QueryWrapper<City> queryWrapper = new QueryWrapper<>();
             queryWrapper.in("uid", uid);
             City city = baseMapper.selectOne(queryWrapper);
@@ -306,6 +327,7 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
             Map<String, Object> map = new HashMap<>();
             map.put("name", name);
             map.put("score", Math.abs((int) score));
+            map.put("aqi", Integer.parseInt(aqi));
             y.add(map);
         }
         RankVo rankVo = new RankVo();

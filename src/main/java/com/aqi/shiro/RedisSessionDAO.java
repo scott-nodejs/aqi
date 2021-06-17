@@ -7,12 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.io.Serializable;
 
 @Component
 public class RedisSessionDAO extends EnterpriseCacheSessionDAO {
 
-    @Autowired
+    @Resource
     private RedisTemplate<String, Object> redisTemplate;
 
     @Autowired
@@ -21,7 +22,7 @@ public class RedisSessionDAO extends EnterpriseCacheSessionDAO {
     @Override
     protected Serializable doCreate(Session session) {
         Serializable sessionId = super.doCreate(session);
-        redisTemplate.opsForValue().set(getSessionKey(sessionId), session);
+        redisTemplate.opsForValue().set(getSessionKey(sessionId), session.toString());
 
         return sessionId;
     }
@@ -29,10 +30,15 @@ public class RedisSessionDAO extends EnterpriseCacheSessionDAO {
     @Override
     protected Session doReadSession(Serializable sessionId) {
         Session session = super.doReadSession(sessionId);
-        if (session == null) {
-            String sessionKey = getSessionKey(sessionId);
-            session = (Session) redisTemplate.opsForValue().get(getSessionKey(sessionId));
+        try{
+            if (session == null) {
+                String sessionKey = getSessionKey(sessionId);
+                session = (Session) redisTemplate.opsForValue().get(getSessionKey(sessionId));
+            }
+        }catch (Exception e){
+
         }
+
 
         return session;
     }
@@ -40,7 +46,7 @@ public class RedisSessionDAO extends EnterpriseCacheSessionDAO {
     @Override
     protected void doUpdate(Session session) {
         super.doUpdate(session);
-        redisTemplate.opsForValue().set(getSessionKey(session.getId()), session);
+        redisTemplate.opsForValue().set(getSessionKey(session.getId()), session.toString());
     }
 
     @Override

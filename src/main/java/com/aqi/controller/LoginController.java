@@ -14,10 +14,7 @@ import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 /**
@@ -25,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2020/01/23
  */
 @RestController
+@RequestMapping(value = "/client/api")
 public class LoginController {
 
     /**

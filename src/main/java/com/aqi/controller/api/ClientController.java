@@ -1,10 +1,16 @@
 package com.aqi.controller.api;
 
+import com.aqi.configer.exception.ResultException;
+import com.aqi.entity.CustomCity;
+import com.aqi.entity.CustomCityVo;
 import com.aqi.service.AqiService;
 import com.aqi.service.CityService;
+import com.aqi.service.CustomCityService;
 import com.aqi.utils.ResultVoUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/client/api")
@@ -15,6 +21,9 @@ public class ClientController {
 
     @Autowired
     private CityService cityService;
+
+    @Autowired
+    private CustomCityService customCityService;
 
     @GetMapping(value = "/getAqiByCity/{id}/{type}")
     public Object getAqiByCityId(@PathVariable int id, @PathVariable int type){
@@ -40,5 +49,21 @@ public class ClientController {
     @GetMapping(value = "/getCityByCityName/{name}")
     public Object getCityByCityName(@PathVariable String name){
         return cityService.getCityByName(name);
+    }
+
+    @PostMapping(value = "/custom/city")
+    public Object submitCustomCity(@RequestBody CustomCityVo customCityVo){
+        if(customCityVo.getPhone() == null){
+            throw new ResultException(400, "电话号码不能为空");
+        }
+        return ResultVoUtil.success(customCityService.submitCustomCity(customCityVo));
+    }
+
+    @GetMapping(value = "/get/customCity")
+    public Object getCustomCity(String phone){
+        if(phone == null){
+            throw new ResultException(400, "电话号码不能为空");
+        }
+        return ResultVoUtil.success(customCityService.selectCustomCity(phone));
     }
 }

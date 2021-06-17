@@ -47,7 +47,7 @@ public class AuthRealm extends AuthorizingRealm {
         User user = userService.getOne(queryWrapper);
         // 判断用户名是否存在
         if(user == null){
-            throw new UnknownAccountException();
+            throw new UnknownAccountException("用户不存在");
         }
         // 对盐进行加密处理
         ByteSource salt = ByteSource.Util.bytes(user.getSalt());

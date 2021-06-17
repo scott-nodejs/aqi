@@ -201,6 +201,16 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
     }
 
     @Override
+    public Aqi selectLastestAqiByCityId(int cityId, int type) {
+        QueryWrapper<Aqi> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("uid", cityId);
+        queryWrapper.orderByDesc("vtime");
+        queryWrapper.last("limit 1");
+        Aqi aqi = baseMapper.selectOne(queryWrapper);
+        return aqi;
+    }
+
+    @Override
     public Object selectAqiByArea(int cityId, int type) {
         Area city = areaService.getAreaByUid(cityId);
         int start = city.getName().indexOf("(");

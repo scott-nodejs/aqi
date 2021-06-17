@@ -17,6 +17,5 @@ public class User {
     private int type;
     private int createTime;
     private int updateTime;
-    @TableField(exist = false)
     private String salt;
 }
