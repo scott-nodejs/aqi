@@ -46,9 +46,9 @@ public class keywordTask {
         cronService.cronupdateTime();
     }
 
-    /**
-     * 随机爬取附近节点的pm2.5
-     */
+//    /**
+//     * 随机爬取附近节点的pm2.5
+//     */
 //    @Scheduled(cron = "0 0/10 * * * ?")
 //    public void rand(){
 //        cronService.onlyPm25();

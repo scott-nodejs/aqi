@@ -3,6 +3,7 @@ package com.aqi.service;
 import org.springframework.data.geo.Point;
 import org.springframework.data.redis.core.ZSetOperations;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -29,4 +30,6 @@ public interface RedisService {
     void addGeo(Map<String, Point> points);
 
     String getLastestPoint(double lng, double lat);
+
+    List<String> hgetAll(String key);
 }

@@ -44,6 +44,9 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
     @Autowired
     RedisService redisService;
 
+    @Autowired
+    CustomCityService customCityService;
+
     @Override
     public void insertAqi(Aqi aqi) {
         try{
@@ -737,48 +740,17 @@ public class AqiServiceImpl extends ServiceImpl<AqiMapper, Aqi> implements AqiSe
     }
 
     @Override
-    public Object getWaqiMap() {
-        Map<Integer,Area> areas;
-        long s = System.currentTimeMillis();
-        String allArea = redisService.getString(GlobalConstant.ALL_AREA);
-        if(allArea == null){
-            areas = areaService.list().stream().collect(Collectors.toMap(Area::getUid,area->area));
-            redisService.setString(GlobalConstant.ALL_AREA, JSONObject.toJSONString(areas));
-        }else{
-            areas = JSONObject.parseObject(allArea,  new TypeReference<Map<Integer, Area>>(){});
-        }
-        System.out.println((System.currentTimeMillis() - s)/1000);
-        Map<Integer, Waqi> map = waqiService.selectWaqiByLastest().stream().collect(Collectors.toMap(Waqi::getUid,waqi -> waqi));
-
-        Iterator<Map.Entry<Integer, Waqi>> iterator = map.entrySet().iterator();
+    public Object getWaqiMap(String phone) {
+        List<String> geos = redisService.hgetAll(GlobalConstant.WAQI_UID);
         List<MapResult.Geo> m = new ArrayList<>();
-        while (iterator.hasNext()){
-            Map.Entry<Integer, Waqi> next = iterator.next();
-            MapResult.Geo geo = new MapResult.Geo();
-            Area area = areas.get(next.getKey());
-            if(area == null){
-                continue;
-            }
-            List<Double> g = new ArrayList<>();
-            g.add(area.getLat());
-            g.add(area.getLon());
-            geo.setG(g);
-            geo.setA(String.valueOf(next.getValue().getAqi()));
-            geo.setX(next.getKey()+"");
-            String name = area.getName();
-            int start = area.getName().indexOf("(");
-            int end = area.getName().indexOf(")");
-            if(start != -1 && end != -1){
-                name = area.getName().substring(start+1,end);
-            }
-            geo.setName(name);
-            geo.setUpdateTime(TimeUtil.convertMillisToString(Long.valueOf(next.getValue().getVtime()+"000")));
-            int color = getColorInt(next.getValue().getAqi());
-            geo.setColor(color);
-            m.add(geo);
-        }
-        Map<String,List<MapResult.Geo>> map1 = new HashMap<>();
+        geos.forEach(geo->{
+            MapResult.Geo g = JSON.parseObject(geo, MapResult.Geo.class);
+            m.add(g);
+        });
+        List<Map<String, Object>> maps = customCityService.selectCustomCity(phone);
+        Map<String,Object> map1 = new HashMap<>();
         map1.put("items", m);
+        map1.put("data", maps);
         return map1;
     }
 

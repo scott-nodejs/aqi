@@ -112,4 +112,9 @@ public class RedisServiceImpl implements RedisService {
         }
         return "";
     }
+
+    @Override
+    public List<String> hgetAll(String key) {
+        return redisTemplate.opsForHash().values(key);
+    }
 }

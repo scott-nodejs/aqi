@@ -53,4 +53,6 @@ public class GlobalConstant {
     public static final String RANK = "CITY:AQI:RANK";
 
     public static final String CITY_UIDS = "CITY:UIDS";
+
+    public static final String WAQI_UID = "WAQI:UID";
 }
